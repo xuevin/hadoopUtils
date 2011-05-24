@@ -6,38 +6,42 @@ import org.apache.mahout.math.Matrix;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.DesignMatrix;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.DesignMatrixFactory;
 
 public class DesignMatrixTest {
   private Matrix test;
   private int numProbes = 5;
   private int numSamples = 6;
+  DesignMatrixFactory factory;
+  
   @Before
   public void setUp() throws Exception {
-    test = DesignMatrix.getDesignMatrix(numProbes, numSamples);
+    factory = new DesignMatrixFactory(numProbes, numSamples);
+    test = factory.getDesignMatrix();
   }
-    
+  
   @Test
   public void testDesignMatrix() {
-    for(int i = 0;i< numProbes*numSamples; i++){
-      for(int j = 0;j<(numProbes + numSamples - 1);j++){
-        System.out.print(test.get(i, j)+"\t");
+    for (int i = 0; i < numProbes * numSamples; i++) {
+      for (int j = 0; j < (numProbes + numSamples - 1); j++) {
+        System.out.print(test.get(i, j) + "\t");
       }
       System.out.println();
     }
   }
+  
   @Test
   public void testTranspose() {
-   
+    
     Matrix originalTranspose = test.transpose();
-    Matrix quickTranspose = DesignMatrix.getDesignMatrixTranspose(numProbes, numSamples);
+    Matrix quickTranspose = factory.getDesignMatrixTranspose();
     int rows = originalTranspose.size()[0];
     int col = originalTranspose.size()[1];
     
-    for(int i = 0; i< rows; i ++ ){
-      for(int j = 0; j< col; j++){
-        System.out.print(originalTranspose.get(i, j)+"\t");
-        assertEquals(originalTranspose.get(i, j), quickTranspose.get(i, j),0);
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < col; j++) {
+        System.out.print(originalTranspose.get(i, j) + "\t");
+        assertEquals(originalTranspose.get(i, j), quickTranspose.get(i, j), 0);
       }
       System.out.println();
     }

@@ -61,25 +61,24 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
     Vector dataVector = getDataVector(probeset);
     
     log.info("Creating Design Matrix");
-    DistributedDesignMatrix designMatrixObject = new DistributedDesignMatrix(probeset.getNumProbes(),
-        probeset.getNumSamples(), probeset.getProbesetName(), tmpPath, designPath, jarString);
+    DistributedDesignMatrixFactory distributedDesignMatrixFactory = new DistributedDesignMatrixFactory(
+        probeset.getNumProbes(), probeset.getNumSamples(), probeset.getProbesetName(), tmpPath, designPath,
+        jarString);
     
-    DistributedRowMatrix designMatrix = designMatrixObject.get();
-    DistributedRowMatrix designMatrixTranspose = designMatrixObject.getTranspose();
+    DistributedRowMatrix designMatrix = distributedDesignMatrixFactory.getDesignMatrix();
+    DistributedRowMatrix designMatrixTranspose = distributedDesignMatrixFactory.getDesignMatrixTranspose();
     
-    DistributedConjugateGradientSolver dcgs = new DistributedConjugateGradientSolver();
     
     log.info("Create A");
-    DistributedRowMatrix A = getProductOfATransposeB(designMatrix, designMatrix, context, tmpPath);
+    DistributedRowMatrix A = distributedDesignMatrixFactory
+        .getProductOfDesignMatrixTransposeTimesDesignMatrix();
     
     log.info("Create b");
     Vector b = designMatrixTranspose.times(dataVector);
     
     log.info("Running Congjugate Gradient Solver");
+    DistributedConjugateGradientSolver dcgs = new DistributedConjugateGradientSolver();
     Vector vectorOfEstimates = dcgs.solve(A, b, null, b.size(), tol);
-    
-    log.info("Deleting A: " + A.getRowPath());
-    FileSystem.get(conf).delete(A.getRowPath(), true);
     
     log.info("Calculating Residuals");
     Vector vectorOfResidualsInitial = dataVector.minus(designMatrix.times(vectorOfEstimates));

@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.ebi.fgpt.hadoopUtils.math.StringToVector;
-import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.DesignMatrix;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.DesignMatrixFactory;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.Probeset;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.IterativelyReweightedLeastSquares;
@@ -145,11 +145,12 @@ public class IterativelyReweightedLeastSquaresTest {
     Probeset probeset = loadSampleProbeset();
     IrlsOutput output = IterativelyReweightedLeastSquares.run(probeset, 0.0001, 20);
     output.print();
-    assertEquals(0.997123910825911, output.getArrayOfWeightVectors()[0].get(0),0.0001);
-    assertEquals(4.34064599510290, output.getVectorOfEstimates().get(0),0.0001);
+    assertEquals(0.997123910825911, output.getArrayOfWeightVectors()[0].get(0), 0.0001);
+    assertEquals(4.34064599510290, output.getVectorOfEstimates().get(0), 0.0001);
   }
+  
   @Test
-    public void testMyMock(){
+  public void testMyMock() {
     mockProbeset = new Probeset();
     mockProbeset.setProbesetName("mock_name");
     
@@ -168,20 +169,20 @@ public class IterativelyReweightedLeastSquaresTest {
     mockProbeset.setArrayOfProbes(mockarray);
     IrlsOutput output = IterativelyReweightedLeastSquares.run(mockProbeset, 0.0001, 20);
     output.print();
-
     
   }
+  
   @Test
   public void testRunHuge() throws URISyntaxException, IOException {
     Probeset probeset = loadHUGEProbeset();
-    
-    Matrix designMatrix = DesignMatrix.getDesignMatrix(probeset.getNumProbes(), probeset.getNumSamples());
+    DesignMatrixFactory factory = new DesignMatrixFactory(probeset.getNumProbes(), probeset.getNumSamples());
+    Matrix designMatrix = factory.getDesignMatrix();
     System.out.println(designMatrix.size()[0] + " " + designMatrix.size()[1]);
-//    long time = System.currentTimeMillis();
-//    designMatrix.quicktranspose().times(designMatrix);
-//    System.out.println(System.currentTimeMillis()-time);
-
-//    IrlsOutput output = IterativelyReweightedLeastSquares.run(probeset, 0.0001, 20);
+    // long time = System.currentTimeMillis();
+    // designMatrix.quicktranspose().times(designMatrix);
+    // System.out.println(System.currentTimeMillis()-time);
+    
+    // IrlsOutput output = IterativelyReweightedLeastSquares.run(probeset, 0.0001, 20);
   }
   
   private Probeset loadSampleProbeset() throws URISyntaxException, IOException {
@@ -201,6 +202,7 @@ public class IterativelyReweightedLeastSquaresTest {
     System.out.println(i);
     return new Probeset("mock", arrayOfVectors);
   }
+  
   private Probeset loadHUGEProbeset() throws URISyntaxException, IOException {
     
     File file = new File(getClass().getClassLoader().getResource("probeset1.log2.matrix.txt").toURI());

@@ -11,7 +11,7 @@ import org.apache.mahout.math.solver.ConjugateGradientSolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.DesignMatrix;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.DesignMatrixFactory;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.Probeset;
 
@@ -34,12 +34,12 @@ public class IterativelyReweightedLeastSquares {
     Vector dataVector = getDataVector(probeset);
     
     log.info("Creating Design Matrix");
-    Matrix designMatrix = DesignMatrix.getDesignMatrix(probeset.getNumProbes(), probeset.getNumSamples());
-    Matrix designMatrixTranspose = DesignMatrix.getDesignMatrixTranspose(probeset.getNumProbes(), probeset
+    DesignMatrixFactory designMatrixFactory = new DesignMatrixFactory(probeset.getNumProbes(), probeset
         .getNumSamples());
+    Matrix designMatrix = designMatrixFactory.getDesignMatrix();
+    Matrix designMatrixTranspose = designMatrixFactory.getDesignMatrixTranspose();
     
     ConjugateGradientSolver cgs = new ConjugateGradientSolver();
-    
     
     log.info("Create A");
     Matrix A = designMatrixTranspose.times(designMatrix);

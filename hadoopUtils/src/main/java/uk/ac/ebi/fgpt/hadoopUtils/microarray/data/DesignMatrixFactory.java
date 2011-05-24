@@ -3,9 +3,16 @@ package uk.ac.ebi.fgpt.hadoopUtils.microarray.data;
 import org.apache.mahout.math.Matrix;
 import org.apache.mahout.math.SparseMatrix;
 
-public class DesignMatrix {
+public class DesignMatrixFactory {
+  private int numProbes;
+  private int numSamples;
   
-  public static Matrix getDesignMatrix(int numProbes, int numSamples) {
+  public DesignMatrixFactory(int numProbes, int numSamples){
+    this.numProbes = numProbes;
+    this.numSamples = numSamples;
+  }
+  
+  public Matrix getDesignMatrix() {
     SparseMatrix matrix = new SparseMatrix(numProbes * numSamples, (numSamples + numProbes - 1));
     
     int rowPosition = 0;
@@ -25,7 +32,7 @@ public class DesignMatrix {
     return matrix;
   }
   
-  public static Matrix getDesignMatrixTranspose(int numProbes, int numSamples) {
+  public Matrix getDesignMatrixTranspose() {
     Matrix sparseMatrix = new SparseMatrix((numSamples + numProbes - 1), numProbes * numSamples);
     int column = 0;
     for (int i = 0; i < numSamples; i++) {
