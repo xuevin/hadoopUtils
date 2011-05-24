@@ -8,8 +8,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapred.JobClient;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapreduce.Mapper.Context;
+import org.apache.hadoop.mapred.JobConf; //import org.apache.hadoop.mapreduce.Mapper.Context;
+import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Matrix;
 import org.apache.mahout.math.SparseMatrix;
@@ -67,7 +67,6 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
     
     DistributedRowMatrix designMatrix = distributedDesignMatrixFactory.getDesignMatrix();
     DistributedRowMatrix designMatrixTranspose = distributedDesignMatrixFactory.getDesignMatrixTranspose();
-    
     
     log.info("Create A");
     DistributedRowMatrix A = distributedDesignMatrixFactory

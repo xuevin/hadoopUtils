@@ -27,9 +27,8 @@ public class DistributedDesignMatrixFactory {
   private int numProbes;
   private int numSamples;
   private String jarString;
-  private FileSystem fs;
   private Configuration conf;
-  private DesignMatrixFactory designMatrixFactory;
+  private FileSystem fs;
   
   public DistributedDesignMatrixFactory(int numProbes,
                                         int numSamples,
@@ -40,8 +39,8 @@ public class DistributedDesignMatrixFactory {
     
     log.info("Creating Design Matrix Factory");
     conf = new Configuration();
-    fs = FileSystem.get(conf);
     
+    fs = FileSystem.get(conf);
     log.info("Check if Temp Path Exists");
     if (!fs.exists(tmpPath)) {
       log.info("Making Temp Path");
@@ -53,16 +52,16 @@ public class DistributedDesignMatrixFactory {
     this.numProbes = numProbes;
     this.numSamples = numSamples;
     this.jarString = jarString;
-    this.designMatrixFactory = new DesignMatrixFactory(numProbes, numSamples);
+    
   }
   
   public DistributedRowMatrix getDesignMatrix() throws IOException {
     Path designMatrixPath = new Path(designPath, numProbes + ".des");
     
-    log.info("Checking if design matrix exist");
+    log.info("Path Checking");
     if (!fs.isFile(designMatrixPath)) {
-      log.info("Does not exist! Creating New Design Matrix: " + designMatrixPath.toString());
-      writeNewDesignMatrixToHDFS(numProbes, numSamples, designMatrixPath);
+      log.info("Does not exist! Please confirm that the following path exists: "
+               + designMatrixPath.toString());
     }
     
     log.info("Creating DistributedRowMatrix for DesignMatrix");
@@ -79,10 +78,10 @@ public class DistributedDesignMatrixFactory {
   public DistributedRowMatrix getDesignMatrixTranspose() throws IOException {
     Path designMatrixTranposePath = new Path(designPath, numProbes + ".des.t");
     
-    log.info("Temporary Path Checking");
+    log.info("Path Checking");
     if (!fs.isFile(designMatrixTranposePath)) {
-      log.info("Does not exist! Creating New Design Matrix: " + designMatrixTranposePath.toString());
-      writeNewDesignMatrixTranposeToHDFS(numProbes, numSamples, designMatrixTranposePath);
+      log.info("Does not exist! Please confirm that the following path exists: "
+               + designMatrixTranposePath.toString());
     }
     
     log.info("Creating DistributedRowMatrix for Transpose");
@@ -97,38 +96,12 @@ public class DistributedDesignMatrixFactory {
     
   }
   
-  private void writeNewDesignMatrixTranposeToHDFS(int numProbes, int numSamples, Path designMatrixTranposePath) throws IOException {
-    
-    Matrix designMatrixTranspose = designMatrixFactory.getDesignMatrixTranspose();
-    fs.makeQualified(designMatrixTranposePath);
-    SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, designMatrixTranposePath,
-      IntWritable.class, VectorWritable.class);
-    for (int i = 0; i < designMatrixTranspose.size()[0]; i++) {
-      writer.append(new IntWritable(i), new VectorWritable(designMatrixTranspose.getRow(i)));
-    }
-    writer.close();
-    
-  }
-  
-  private void writeNewDesignMatrixToHDFS(int numProbes, int numSamples, Path designMatrixPath) throws IOException {
-    
-    Matrix designMatrixObject = designMatrixFactory.getDesignMatrix();
-    fs.makeQualified(designMatrixPath);
-    SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, designMatrixPath, IntWritable.class,
-      VectorWritable.class);
-    for (int i = 0; i < designMatrixObject.size()[0]; i++) {
-      writer.append(new IntWritable(i), new VectorWritable(designMatrixObject.getRow(i)));
-    }
-    writer.close();
-  }
-  
   public DistributedRowMatrix getProductOfDesignMatrixTransposeTimesDesignMatrix() throws IOException {
     Path productPath = new Path(designPath, numProbes + ".prod");
     
-    log.info("Temporary Path Checking");
-    if (!fs.isFile(productPath)) {
-      log.info("Does not exist! Creating New Product Matrix: " + productPath.toString());
-      writeNewProductToHDFS(productPath);
+    log.info("Path Checking");
+    if (!fs.exists(productPath)) {
+      log.warn("Does not exist! Please confirm that the following path exists: " + productPath.toString());
     }
     
     log.info("Creating DistributedRowMatrix for Product");
@@ -141,20 +114,4 @@ public class DistributedDesignMatrixFactory {
     
     return designMatrixProduct;
   }
-  
-  private void writeNewProductToHDFS(Path productPath) throws IOException {
-    
-    log.info("Creating product of DesignMatrixTranpose x Design Matrix");
-    DistributedRowMatrix matrixA = getDesignMatrix();
-    DistributedRowMatrix matrixB = getDesignMatrix();
-    
-    log.info("Multiplying the transpose of " + matrixA.getRowPath() + " with " + matrixB.getRowPath()
-             + " -> " + productPath.toString());
-    
-    Configuration initialConf = matrixA.getConf();
-    Configuration conf = MatrixMultiplicationJob.createMatrixMultiplyJobConf(initialConf, matrixA
-        .getRowPath(), matrixB.getRowPath(), productPath, matrixB.numCols());
-    JobClient.runJob(new JobConf(conf));
-  }
-  
 }

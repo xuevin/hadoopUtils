@@ -5,6 +5,7 @@ import uk.ac.ebi.fgpt.hadoopUtils.mapreduce.Transpose_MapRed;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.DistributedIrlsJob;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.DistributedSortProbesJob;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.CreateDesignMatrix;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.IterativelyReweightedLeastSquaresJob;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.ReadIrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.ReadProbesets;
@@ -54,6 +55,8 @@ public class Main {
       ReadProbesets.main(newArgs);
     } else if (args[0].equals("readIrlsOutput")) {
       ReadIrlsOutput.main(newArgs);
+    } else if (args[0].equals("createDesign")) {
+      CreateDesignMatrix.main(newArgs);
     } else {
       printOptions();
     }
@@ -64,6 +67,6 @@ public class Main {
                        + "\tnormalizeVector\n" + "\tnormalizeVectorWithMapRed\n" + "\treindex\n"
                        + "\tsupervisedPCA\n" + "\ttranspose\n" + "\ttail\n" + "\tirlsJob\n"
                        + "\tsortProbesJob\n" + "\tdistIrlsJob\n" + "\treadProbeset\n" + "\treadVector\n"
-                       + "\treadIrlsOutput\n");
+                       + "\treadIrlsOutput\n" + "\tcreateDesign\n");
   }
 }

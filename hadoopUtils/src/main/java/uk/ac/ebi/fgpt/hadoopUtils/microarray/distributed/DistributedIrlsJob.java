@@ -42,27 +42,54 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.ProbesetWritable;
  * 
  */
 public class DistributedIrlsJob extends Configured implements Tool {
-  public static class Map extends Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable> {
+  // public static class Map extends Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable> {
+  // @Override
+  // protected void map(Text key,
+  // ProbesetWritable value,
+  // Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
+  // InterruptedException {
+  //      
+  // IrlsOutput output = DistributedIrls.run(value.get(), 0.0001, 20, context);
+  // context.write(key, new IrlsOutputWritable(output));
+  // }
+  // }
+  //  
+  // public static class Reduce extends Reducer<Text,IrlsOutputWritable,Text,IrlsOutputWritable> {
+  // @Override
+  // protected void reduce(Text key,
+  // Iterable<IrlsOutputWritable> value,
+  // Reducer<Text,IrlsOutputWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
+  // InterruptedException {
+  // Iterator<IrlsOutputWritable> iterator = value.iterator();
+  // while (iterator.hasNext()) {
+  // context.write(key, iterator.next());
+  // }
+  //      
+  // }
+  // }
+  //  
+  
+  public static class Map extends Mapper<Text,ProbesetWritable,Text,ProbesetWritable> {
     @Override
     protected void map(Text key,
                        ProbesetWritable value,
-                       Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
-                                                                                             InterruptedException {
+                       Mapper<Text,ProbesetWritable,Text,ProbesetWritable>.Context context) throws IOException,
+                                                                                           InterruptedException {
       
-      IrlsOutput output = DistributedIrls.run(value.get(), 0.0001, 20, context);
-      context.write(key, new IrlsOutputWritable(output));
+      context.write(key, value);
     }
   }
   
-  public static class Reduce extends Reducer<Text,IrlsOutputWritable,Text,IrlsOutputWritable> {
+  public static class Reduce extends Reducer<Text,ProbesetWritable,Text,IrlsOutputWritable> {
     @Override
     protected void reduce(Text key,
-                          Iterable<IrlsOutputWritable> value,
-                          Reducer<Text,IrlsOutputWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
-                                                                                                   InterruptedException {
-      Iterator<IrlsOutputWritable> iterator = value.iterator();
+                          Iterable<ProbesetWritable> value,
+                          Reducer<Text,ProbesetWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
+                                                                                                 InterruptedException {
+      Iterator<ProbesetWritable> iterator = value.iterator();
       while (iterator.hasNext()) {
-        context.write(key, iterator.next());
+        IrlsOutput output = DistributedIrls.run(iterator.next().get(), 0.0001, 20, context);
+        context.write(key, new IrlsOutputWritable(output));
       }
       
     }
@@ -84,12 +111,15 @@ public class DistributedIrlsJob extends Configured implements Tool {
         .withDescription("use given HDFS dir as output").create("t");
     Option matrix = OptionBuilder.withArgName("designDir").hasArg().isRequired().withLongOpt("designDir")
         .withDescription("use given HDFS dir for storing Design Matricies").create("d");
+    Option reduces = OptionBuilder.withArgName("num").hasArg().isRequired().withLongOpt("reduces")
+        .withDescription("the number of reduces that should run").create("r");
     
     // Add Options
     cliOptions.addOption(input);
     cliOptions.addOption(output);
     cliOptions.addOption(temp);
     cliOptions.addOption(matrix);
+    cliOptions.addOption(reduces);
     
     HelpFormatter formatter = new HelpFormatter();
     
@@ -107,22 +137,27 @@ public class DistributedIrlsJob extends Configured implements Tool {
       String pathToOutput = cmd.getOptionValue("o");
       String pathToTemp = cmd.getOptionValue("t");
       String pathToDesign = cmd.getOptionValue("d");
-      run(pathToInput, pathToOutput, pathToDesign, pathToTemp);
+      int numReduces = Integer.parseInt(cmd.getOptionValue("r"));
+      run(pathToInput, pathToOutput, pathToDesign, pathToTemp, numReduces);
     } catch (ParseException e) {
       formatter.printHelp("IrlsJob", cliOptions, true);
     }
     return 0;
   }
   
-  public void run(String pathToInput, String pathToOutput, String pathToDesign, String pathToTemp) throws IOException,
-                                                                                                  InterruptedException,
-                                                                                                  ClassNotFoundException {
+  public void run(String pathToInput,
+                  String pathToOutput,
+                  String pathToDesign,
+                  String pathToTemp,
+                  int numReduces) throws IOException, InterruptedException, ClassNotFoundException {
     getConf().set("temp", pathToTemp);
     getConf().set("design", pathToDesign);
     getConf().set("mapred.child.java.opts", "-Xmx2000m");
-    getConf().set("mapred.task.timeout", "10800000"); //Time out after 3 hours
+    getConf().set("mapred.task.timeout", "10800000"); // Time out after 3 hours
     
     Job job = new Job(getConf());
+    job.setNumReduceTasks(numReduces);
+    
     job.setJobName("Performing IRLS on : " + pathToInput + " output -> " + pathToOutput);
     job.setJarByClass(DistributedIrlsJob.class);
     
@@ -138,7 +173,8 @@ public class DistributedIrlsJob extends Configured implements Tool {
     FileOutputFormat.setOutputPath(job, outputPath);
     
     job.setMapOutputKeyClass(Text.class); // Probeset Name
-    job.setMapOutputValueClass(IrlsOutputWritable.class); // Vector of estimates and Vector of weights
+    // job.setMapOutputValueClass(IrlsOutputWritable.class); // Vector of estimates and Vector of weights
+    job.setMapOutputValueClass(ProbesetWritable.class);
     
     // Establish the Output of the Job
     job.setOutputKeyClass(Text.class); // Probeset Name
