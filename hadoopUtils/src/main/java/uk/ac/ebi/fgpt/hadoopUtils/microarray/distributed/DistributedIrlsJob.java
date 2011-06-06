@@ -26,6 +26,9 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
+import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutputWritable;
@@ -42,58 +45,65 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.ProbesetWritable;
  * 
  */
 public class DistributedIrlsJob extends Configured implements Tool {
-   public static class Map extends Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable> {
-   @Override
-   protected void map(Text key,
-   ProbesetWritable value,
-   Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
-   InterruptedException {
-        
-   IrlsOutput output = DistributedIrls.run(value.get(), 0.0001, 20, context);
-   context.write(key, new IrlsOutputWritable(output));
-   }
-   }
-    
-   public static class Reduce extends Reducer<Text,IrlsOutputWritable,Text,IrlsOutputWritable> {
-   @Override
-   protected void reduce(Text key,
-   Iterable<IrlsOutputWritable> value,
-   Reducer<Text,IrlsOutputWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
-   InterruptedException {
-   Iterator<IrlsOutputWritable> iterator = value.iterator();
-   while (iterator.hasNext()) {
-   context.write(key, iterator.next());
-   }
-        
-   }
-   }
-    
+  private static Logger log = LoggerFactory.getLogger(DistributedIrlsJob.class);
   
-//  public static class Map extends Mapper<Text,ProbesetWritable,Text,ProbesetWritable> {
-//    @Override
-//    protected void map(Text key,
-//                       ProbesetWritable value,
-//                       Mapper<Text,ProbesetWritable,Text,ProbesetWritable>.Context context) throws IOException,
-//                                                                                           InterruptedException {
-//      
-//      context.write(key, value);
-//    }
-//  }
-//  
-//  public static class Reduce extends Reducer<Text,ProbesetWritable,Text,IrlsOutputWritable> {
-//    @Override
-//    protected void reduce(Text key,
-//                          Iterable<ProbesetWritable> value,
-//                          Reducer<Text,ProbesetWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
-//                                                                                                 InterruptedException {
-//      Iterator<ProbesetWritable> iterator = value.iterator();
-//      while (iterator.hasNext()) {
-//        IrlsOutput output = DistributedIrls.run(iterator.next().get(), 0.0001, 20, context);
-//        context.write(key, new IrlsOutputWritable(output));
-//      }
-//      
-//    }
-//  }
+  public static class Map extends Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable> {
+    private static final int MAXNUMBERPROBES = 30;
+    
+    @Override
+    protected void map(Text key,
+                       ProbesetWritable value,
+                       Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
+                                                                                             InterruptedException {
+      
+      if (value.get().getNumProbes() < MAXNUMBERPROBES) {
+        IrlsOutput output = DistributedIrls.run(value.get(), 0.0001, 20, context);
+        context.write(key, new IrlsOutputWritable(output));
+      } else {
+        log.warn("SKIPPED: " + value.get().getProbesetName());
+      }
+    }
+  }
+  
+  public static class Reduce extends Reducer<Text,IrlsOutputWritable,Text,IrlsOutputWritable> {
+    @Override
+    protected void reduce(Text key,
+                          Iterable<IrlsOutputWritable> value,
+                          Reducer<Text,IrlsOutputWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
+                                                                                                   InterruptedException {
+      Iterator<IrlsOutputWritable> iterator = value.iterator();
+      while (iterator.hasNext()) {
+        context.write(key, iterator.next());
+      }
+      
+    }
+  }
+  
+  // public static class Map extends Mapper<Text,ProbesetWritable,Text,ProbesetWritable> {
+  // @Override
+  // protected void map(Text key,
+  // ProbesetWritable value,
+  // Mapper<Text,ProbesetWritable,Text,ProbesetWritable>.Context context) throws IOException,
+  // InterruptedException {
+  //      
+  // context.write(key, value);
+  // }
+  // }
+  //  
+  // public static class Reduce extends Reducer<Text,ProbesetWritable,Text,IrlsOutputWritable> {
+  // @Override
+  // protected void reduce(Text key,
+  // Iterable<ProbesetWritable> value,
+  // Reducer<Text,ProbesetWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
+  // InterruptedException {
+  // Iterator<ProbesetWritable> iterator = value.iterator();
+  // while (iterator.hasNext()) {
+  // IrlsOutput output = DistributedIrls.run(iterator.next().get(), 0.0001, 20, context);
+  // context.write(key, new IrlsOutputWritable(output));
+  // }
+  //      
+  // }
+  // }
   
   public static void main(String[] args) throws Exception {
     int res = ToolRunner.run(new Configuration(), new DistributedIrlsJob(), args);
@@ -152,7 +162,7 @@ public class DistributedIrlsJob extends Configured implements Tool {
                   int numReduces) throws IOException, InterruptedException, ClassNotFoundException {
     getConf().set("temp", pathToTemp);
     getConf().set("design", pathToDesign);
-    getConf().set("mapred.child.java.opts", "-Xmx2000m");
+    getConf().set("mapred.child.java.opts", "-Xmx30000m");
     getConf().set("mapred.task.timeout", "10800000"); // Time out after 3 hours
     
     Job job = new Job(getConf());
@@ -174,7 +184,7 @@ public class DistributedIrlsJob extends Configured implements Tool {
     
     job.setMapOutputKeyClass(Text.class); // Probeset Name
     job.setMapOutputValueClass(IrlsOutputWritable.class); // Vector of estimates and Vector of weights
-//    job.setMapOutputValueClass(ProbesetWritable.class);
+    // job.setMapOutputValueClass(ProbesetWritable.class);
     
     // Establish the Output of the Job
     job.setOutputKeyClass(Text.class); // Probeset Name
