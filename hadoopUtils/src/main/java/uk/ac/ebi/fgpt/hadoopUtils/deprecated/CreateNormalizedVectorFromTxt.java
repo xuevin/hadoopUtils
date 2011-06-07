@@ -15,7 +15,7 @@ import org.apache.mahout.math.SequentialAccessSparseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
-import uk.ac.ebi.fgpt.hadoopUtils.math.StringToVector;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.math.StringToVector;
 
 public class CreateNormalizedVectorFromTxt {
 	public static void main(String[] args) throws IOException{

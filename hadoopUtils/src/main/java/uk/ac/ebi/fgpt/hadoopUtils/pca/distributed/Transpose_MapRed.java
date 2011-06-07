@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.hadoopUtils.mapreduce;
+package uk.ac.ebi.fgpt.hadoopUtils.pca.distributed;
 
 import java.io.IOException;
 import java.util.Iterator;

@@ -79,32 +79,6 @@ public class DistributedIrlsJob extends Configured implements Tool {
     }
   }
   
-  // public static class Map extends Mapper<Text,ProbesetWritable,Text,ProbesetWritable> {
-  // @Override
-  // protected void map(Text key,
-  // ProbesetWritable value,
-  // Mapper<Text,ProbesetWritable,Text,ProbesetWritable>.Context context) throws IOException,
-  // InterruptedException {
-  //      
-  // context.write(key, value);
-  // }
-  // }
-  //  
-  // public static class Reduce extends Reducer<Text,ProbesetWritable,Text,IrlsOutputWritable> {
-  // @Override
-  // protected void reduce(Text key,
-  // Iterable<ProbesetWritable> value,
-  // Reducer<Text,ProbesetWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
-  // InterruptedException {
-  // Iterator<ProbesetWritable> iterator = value.iterator();
-  // while (iterator.hasNext()) {
-  // IrlsOutput output = DistributedIrls.run(iterator.next().get(), 0.0001, 20, context);
-  // context.write(key, new IrlsOutputWritable(output));
-  // }
-  //      
-  // }
-  // }
-  
   public static void main(String[] args) throws Exception {
     int res = ToolRunner.run(new Configuration(), new DistributedIrlsJob(), args);
     System.exit(res);

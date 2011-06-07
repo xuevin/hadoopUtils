@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.hadoopUtils.mapreduce;
+package uk.ac.ebi.fgpt.hadoopUtils.pca.distributed;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -27,7 +27,7 @@ import org.apache.mahout.math.SequentialAccessSparseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
-import uk.ac.ebi.fgpt.hadoopUtils.math.StringToVector;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.math.StringToVector;
 
 /**
  * This application creates a SequenceFile with <IntWritable,VectorWritable> keyvalue pairs.

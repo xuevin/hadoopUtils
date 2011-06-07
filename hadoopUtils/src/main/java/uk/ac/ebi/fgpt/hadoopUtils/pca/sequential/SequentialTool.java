@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.hadoopUtils.sequential;
+package uk.ac.ebi.fgpt.hadoopUtils.pca.sequential;
 
 import java.io.IOException;
 

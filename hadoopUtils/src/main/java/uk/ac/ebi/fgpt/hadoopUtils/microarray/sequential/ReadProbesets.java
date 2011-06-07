@@ -17,7 +17,7 @@ import org.apache.mahout.math.Vector;
 
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.Probeset;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.ProbesetWritable;
-import uk.ac.ebi.fgpt.hadoopUtils.sequential.SequentialTool;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.SequentialTool;
 
 public class ReadProbesets extends SequentialTool {
   public static void main(String[] args) throws IOException {

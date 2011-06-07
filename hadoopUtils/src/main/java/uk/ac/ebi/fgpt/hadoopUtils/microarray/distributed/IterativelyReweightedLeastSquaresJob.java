@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential;
+package uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -28,10 +28,13 @@ import org.apache.hadoop.util.ToolRunner;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutputWritable;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.ProbesetWritable;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.math.IterativelyReweightedLeastSquares;
 
 /**
  * This version of IterativelyReweightedLeastSquares sends out a probeset to each node. On the node, it
- * performs IRLS (with sequential linear algebra)
+ * performs IRLS (with sequential linear algebra) 
+ * 
+ * This method is like load balencing.
  * 
  * @author Vincent Xue
  * 

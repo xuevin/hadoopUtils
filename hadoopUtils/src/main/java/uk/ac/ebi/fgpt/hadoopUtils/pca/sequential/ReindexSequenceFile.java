@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.hadoopUtils.sequential;
+package uk.ac.ebi.fgpt.hadoopUtils.pca.sequential;
 
 import java.io.IOException;
 
@@ -10,18 +10,19 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.mahout.math.VectorWritable;
 
-import uk.ac.ebi.fgpt.hadoopUtils.math.VectorOperations;
-
-public class CreateNormalizedVectorFromVector extends SequentialTool {
+public class ReindexSequenceFile extends SequentialTool{
 	public static void main(String[] args) throws IOException {
 		// Create Options
 		Options cliOptions = new Options();
-		Option input = OptionBuilder.withArgName("input.tsv").hasArg()
+		Option input = OptionBuilder.withArgName("input.seqFile").hasArg()
 				.isRequired().withDescription("use given file as input")
 				.withLongOpt("input").create("i");
 		Option output = OptionBuilder.withArgName("output.seqFile").hasArg()
@@ -38,9 +39,8 @@ public class CreateNormalizedVectorFromVector extends SequentialTool {
 		CommandLineParser parser = new PosixParser();
 
 		if (args.length <= 1) {
-			formatter.printHelp(
-					"normalizeVector",
-					cliOptions, true);
+			formatter.printHelp("Reindex a seqFile sequentially", cliOptions,
+					true);
 			return;
 		}
 
@@ -52,22 +52,22 @@ public class CreateNormalizedVectorFromVector extends SequentialTool {
 			run(pathToInput, pathToOutput);
 
 		} catch (ParseException e) {
-			formatter.printHelp(
-					"normalizeVector",
-					cliOptions, true);
+			formatter.printHelp("Reindex a seqFile sequentially", cliOptions,
+					true);
 		}
+
 	}
 
-	public static void run(String stringToInput, String stringToOutput)
-			throws IOException {
+	public static void run(String stringToInput, String stringToOutput) throws IOException {
 		setup(stringToInput, stringToOutput);
 
 		SequenceFile.Reader reader = new SequenceFile.Reader(fs, inputPath,
 				config);
 
+		int index = 0;
 		try {
-			WritableComparable key = (WritableComparable<IntWritable>) reader
-					.getKeyClass().newInstance();
+			WritableComparable key = (WritableComparable) reader.getKeyClass()
+					.newInstance();
 			VectorWritable value = (VectorWritable) reader.getValueClass()
 					.newInstance();
 
@@ -75,8 +75,8 @@ public class CreateNormalizedVectorFromVector extends SequentialTool {
 					outputPath, IntWritable.class, VectorWritable.class);
 
 			while (reader.next(key, value)) {
-				writer.append(key, new VectorWritable(VectorOperations
-						.normalize(value.get())));
+				writer.append(new IntWritable(index), value);
+				index++;
 			}
 			writer.close();
 			reader.close();

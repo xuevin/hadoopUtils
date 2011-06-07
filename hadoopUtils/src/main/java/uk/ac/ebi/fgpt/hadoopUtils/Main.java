@@ -1,20 +1,20 @@
 package uk.ac.ebi.fgpt.hadoopUtils;
 
-import uk.ac.ebi.fgpt.hadoopUtils.mapreduce.CreateNormalizedVectorsFromVectors_MapRed;
-import uk.ac.ebi.fgpt.hadoopUtils.mapreduce.Transpose_MapRed;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.DistributedIrlsJob;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.DistributedSortProbesJob;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.IterativelyReweightedLeastSquaresJob;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.CreateDesignMatrix;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.CreateDesignMatrixFromProbesetWritable;
-import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.IterativelyReweightedLeastSquaresJob;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.ReadIrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.ReadProbesets;
-import uk.ac.ebi.fgpt.hadoopUtils.sequential.CreateNormalizedVectorFromVector;
-import uk.ac.ebi.fgpt.hadoopUtils.sequential.CreateVectorFromTxt;
-import uk.ac.ebi.fgpt.hadoopUtils.sequential.ReadVectors;
-import uk.ac.ebi.fgpt.hadoopUtils.sequential.ReindexSequenceFile;
-import uk.ac.ebi.fgpt.hadoopUtils.sequential.Tail;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.distributed.CreateNormalizedVectorsFromVectors_MapRed;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.distributed.Transpose_MapRed;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.CreateNormalizedVectorFromVector;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.CreateVectorFromTxt;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.ReadVectors;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.ReindexSequenceFile;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.Tail;
 import uk.ac.ebi.fgpt.hadoopUtils.supervisedPCA.SupervisedPCA;
 
 public class Main {

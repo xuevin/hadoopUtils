@@ -7,7 +7,7 @@ import org.apache.mahout.math.Vector;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.fgpt.hadoopUtils.math.VectorOperations;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.math.VectorOperations;
 
 public class VectorOperationsTest {
   Vector vector;

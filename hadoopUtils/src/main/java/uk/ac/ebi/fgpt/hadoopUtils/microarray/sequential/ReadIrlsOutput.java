@@ -19,7 +19,7 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutputWritable;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.Probeset;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.ProbesetWritable;
-import uk.ac.ebi.fgpt.hadoopUtils.sequential.SequentialTool;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.SequentialTool;
 
 public class ReadIrlsOutput extends SequentialTool {
   public static void main(String[] args) throws IOException {

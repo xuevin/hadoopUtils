@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.Probeset;
-import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.IterativelyReweightedLeastSquares;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.math.IterativelyReweightedLeastSquares;
 
 /**
  * This is the distributed version of IRLS, which takes advantage of the distributed linear algebra functions

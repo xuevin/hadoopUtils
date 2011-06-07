@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential;
+package uk.ac.ebi.fgpt.hadoopUtils.microarray.math;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -14,6 +14,9 @@ import org.apache.mahout.math.VectorWritable;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.CreateVectorFromTxt;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.ReadVectors;
+
 public class TestCreateVectorFromTxt extends HadoopTestCase {
 	private String[][] data = new String[][] { { "2", "4", "6" },
 			{ "8", "10", "12" } };

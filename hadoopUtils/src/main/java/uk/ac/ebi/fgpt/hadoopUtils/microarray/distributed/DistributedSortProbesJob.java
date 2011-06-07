@@ -31,9 +31,9 @@ import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
-import uk.ac.ebi.fgpt.hadoopUtils.math.StringToVector;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.Probeset;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.ProbesetWritable;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.math.StringToVector;
 
 public class DistributedSortProbesJob extends Configured implements Tool {
   public static class MapToVector extends Mapper<LongWritable,Text,Text,VectorWritable> {

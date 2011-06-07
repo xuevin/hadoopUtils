@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.hadoopUtils.mapreduce;
+package uk.ac.ebi.fgpt.hadoopUtils.pca.distributed;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -26,7 +26,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.math.VectorWritable;
 
-import uk.ac.ebi.fgpt.hadoopUtils.math.VectorOperations;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.math.VectorOperations;
 
 /**
  * This application creates a SequenceFile with <IntWritable,VectorWritable>

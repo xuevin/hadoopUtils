@@ -15,11 +15,11 @@ import org.apache.mahout.math.Vector;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.fgpt.hadoopUtils.math.StringToVector;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.DesignMatrixFactory;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.Probeset;
-import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.IterativelyReweightedLeastSquares;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.math.IterativelyReweightedLeastSquares;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.math.StringToVector;
 
 public class IterativelyReweightedLeastSquaresTest {
   private Probeset mockProbeset;

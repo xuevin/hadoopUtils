@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.hadoopUtils.math;
+package uk.ac.ebi.fgpt.hadoopUtils.pca.math;
 
 import java.util.StringTokenizer;
 

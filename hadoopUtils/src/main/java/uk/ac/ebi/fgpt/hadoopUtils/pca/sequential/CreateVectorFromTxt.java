@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.hadoopUtils.sequential;
+package uk.ac.ebi.fgpt.hadoopUtils.pca.sequential;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.mahout.math.VectorWritable;
 
-import uk.ac.ebi.fgpt.hadoopUtils.math.StringToVector;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.math.StringToVector;
 
 public class CreateVectorFromTxt extends SequentialTool {
 

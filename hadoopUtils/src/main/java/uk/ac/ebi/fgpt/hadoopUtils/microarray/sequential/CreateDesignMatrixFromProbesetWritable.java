@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.ProbesetWritable;
-import uk.ac.ebi.fgpt.hadoopUtils.sequential.SequentialTool;
+import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.SequentialTool;
 
 public class CreateDesignMatrixFromProbesetWritable extends SequentialTool {
   private static Logger log = LoggerFactory.getLogger(CreateDesignMatrixFromProbesetWritable.class);
