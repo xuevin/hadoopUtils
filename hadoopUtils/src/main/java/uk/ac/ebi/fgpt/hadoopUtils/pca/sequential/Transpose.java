@@ -16,6 +16,16 @@ import org.apache.mahout.math.SequentialAccessSparseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
+/**
+ * This class is a linear implementation of Transpose. It reads a file many times over, each time moving one column over.
+ * While it iterates down a column, it writes the corresponding column as a row.
+ * 
+ * This should not be used!
+ * 
+ * @author vincent@ebi.ac.uk
+ *
+ */
+@Deprecated
 public class Transpose extends SequentialTool {
   public static void main(String[] args) throws IOException {
     
@@ -72,7 +82,7 @@ public class Transpose extends SequentialTool {
     // This is a very inefficient algorithm that iterates through a sequence
     // file
     // as many times as there are columns
-    // For each iteration, it writes out the tranpose of the column
+    // For each iteration, it writes out the transpose of the column
     
     try {
       // Make the single objects that will be used over and over again.

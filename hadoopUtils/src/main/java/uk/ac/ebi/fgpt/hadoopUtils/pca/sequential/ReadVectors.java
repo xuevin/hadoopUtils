@@ -15,6 +15,11 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.mahout.math.VectorWritable;
 
+/**
+ * This class takes in a Sequence File of vectors and outputs it to stdout.
+ * @author vincent@ebi.ac.uk
+ *
+ */
 public class ReadVectors extends SequentialTool {
   public static void main(String[] args) throws IOException {
     // Create Options

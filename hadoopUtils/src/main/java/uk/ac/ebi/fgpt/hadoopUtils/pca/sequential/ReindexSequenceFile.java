@@ -10,14 +10,18 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.mahout.math.VectorWritable;
 
+/**
+ * 
+ * This class takes in a Sequence File and reindexes it so that it can be transposed.
+ * 
+ * @author vincent@ebi.ac.uk
+ *
+ */
 public class ReindexSequenceFile extends SequentialTool{
 	public static void main(String[] args) throws IOException {
 		// Create Options

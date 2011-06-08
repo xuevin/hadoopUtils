@@ -11,9 +11,13 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.mahout.math.VectorWritable;
+import org.mortbay.log.Log;
 
 public class Tail extends SequentialTool {
   public static void main(String[] args) throws IOException {
@@ -46,16 +50,21 @@ public class Tail extends SequentialTool {
       String pathToInput = cmd.getOptionValue("i");
       String pathToOutput = cmd.getOptionValue("o");
       int numberOfVectors = Integer.parseInt(cmd.getOptionValue('t'));
-      run(pathToInput, pathToOutput, numberOfVectors);
+      setup(pathToInput, pathToOutput);
+      run(inputPath, outputPath, numberOfVectors,config);
       
     } catch (ParseException e) {
       formatter.printHelp("tail", cliOptions, true);
     }
   }
   
-  public static void run(String stringToInput, String stringToOutput, int numVectors) throws IOException {
-    setup(stringToInput, stringToOutput);
+  public static int run(Path inputPath, Path outputPath, int numVectors, Configuration config) throws IOException {
+    FileSystem fs = FileSystem.get(config);
     
+    if (!fs.isFile(inputPath) && fs.exists(inputPath)){
+      System.out.println("This is a folder! Please designate a file");
+      return 1;
+    }
     SequenceFile.Reader reader = new SequenceFile.Reader(fs, inputPath, config);
     
     try {
@@ -90,5 +99,6 @@ public class Tail extends SequentialTool {
     } catch (IllegalAccessException e) {
       e.printStackTrace();
     }
+    return 0;
   }
 }

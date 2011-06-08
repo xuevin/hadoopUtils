@@ -32,9 +32,9 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.math.IterativelyReweightedLeastSqua
 
 /**
  * This version of IterativelyReweightedLeastSquares sends out a probeset to each node. On the node, it
- * performs IRLS (with sequential linear algebra) 
+ * performs IRLS (with sequential linear algebra)
  * 
- * This method is like load balencing.
+ * This method is like load balancing.
  * 
  * @author Vincent Xue
  * 
@@ -65,12 +65,6 @@ public class IterativelyReweightedLeastSquaresJob extends Configured implements 
       
     }
   }
-  
-  // static class MultiFileOutput extends MultipleTextOutputFormat<Text,Text> {
-  // protected String generateFileNameForKeyValue(Text key, Text value, String name) {
-  // return key.toString();
-  // }
-  // }
   
   public static void main(String[] args) throws Exception {
     int res = ToolRunner.run(new Configuration(), new IterativelyReweightedLeastSquaresJob(), args);

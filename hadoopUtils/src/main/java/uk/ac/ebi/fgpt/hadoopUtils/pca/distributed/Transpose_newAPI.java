@@ -2,7 +2,6 @@ package uk.ac.ebi.fgpt.hadoopUtils.pca.distributed;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -14,10 +13,8 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -42,9 +39,9 @@ import org.slf4j.LoggerFactory;
  * @author vincent@ebi.ac.uk
  * 
  */
-public class Transpose_MapRed extends Configured implements Tool {
+public class Transpose_newAPI extends Configured implements Tool {
   
-  private static final Logger log = LoggerFactory.getLogger(Transpose_MapRed.class);
+  private static final Logger log = LoggerFactory.getLogger(Transpose_newAPI.class);
   
   public static class Map extends
       Mapper<IntWritable,VectorWritable,IntWritable,DistributedRowMatrix.MatrixEntryWritable> {
@@ -54,38 +51,17 @@ public class Transpose_MapRed extends Configured implements Tool {
                        Mapper<IntWritable,VectorWritable,IntWritable,DistributedRowMatrix.MatrixEntryWritable>.Context context) throws IOException,
                                                                                                                                InterruptedException {
       
-      int startCol = Integer.parseInt(context.getConfiguration().get("startCol"));
-      int endCol = Integer.parseInt(context.getConfiguration().get("endCol"));
-      
-      log.info("Working on Columns:" + startCol + "-" + endCol);
-      
-      // A down to earth explanation of what is happening:
-      // First this Map process retrieves a single row(A Vector) of the
-      // matrix.
-      // It iterates through the matrix from left to right and if the
-      // index is in between
-      // startCol and endCol, then it sends some output to the reduce. The
-      // output
-      // of the map is a
-      // == Key which is the old column and the new row
-      // == Entry is a value with the new column and no row. The new row
-      // info is stored in the key
-      
       DistributedRowMatrix.MatrixEntryWritable entry = new DistributedRowMatrix.MatrixEntryWritable();
       Iterator<Vector.Element> it = value.get().iterator();
-      int newColumn = key.get(); // Old Row (designated by key) becomes
-      // the new column
+      int newColumn = key.get();
       entry.setCol(newColumn);
       entry.setRow(-1); // output "row" is captured in the key
       
       while (it.hasNext()) {
         Vector.Element e = it.next();
-        if (e.index() >= startCol && e.index() <= endCol) {
-          key.set(e.index());// reuse of the same object. This column
-          // index is now the new Row
-          entry.setVal(e.get());
-          context.write(key, entry);
-        }
+        key.set(e.index());
+        entry.setVal(e.get());
+        context.write(key, entry);
       }
     }
   }
@@ -136,12 +112,12 @@ public class Transpose_MapRed extends Configured implements Tool {
   }
   
   public static void main(String[] args) throws Exception {
-    int res = ToolRunner.run(new Configuration(), new Transpose_MapRed(), args);
+    int res = ToolRunner.run(new Configuration(), new Transpose_newAPI(), args);
     System.exit(res);
   }
   
   public static void runMain(Configuration conf, String args[]) throws Exception {
-    ToolRunner.run(conf, new Transpose_MapRed(), args);
+    ToolRunner.run(conf, new Transpose_newAPI(), args);
   }
   
   public int run(String[] args) throws Exception {
@@ -150,20 +126,21 @@ public class Transpose_MapRed extends Configured implements Tool {
     Option input = OptionBuilder.withArgName("input.seqFile").hasArg().isRequired().withDescription(
       "use given file as input").withLongOpt("input").create("i");
     Option output = OptionBuilder.withArgName("output.seqFile").hasArg().isRequired().withLongOpt("output")
-        .withDescription("use given file as output").create("o");
-    Option splits = OptionBuilder.withArgName("num").hasArg().isRequired().withLongOpt("numSplits")
-        .withDescription("The number of splits").create("s");
+        .withDescription("use given directory as output").create("o");
     Option rows = OptionBuilder.withArgName("num").hasArg().isRequired().withLongOpt("numRows")
         .withDescription("The number of rows").create("nr");
     Option cols = OptionBuilder.withArgName("num").hasArg().isRequired().withLongOpt("numColumns")
         .withDescription("The number of columns").create("nc");
+    Option reduces = OptionBuilder.withArgName("num").hasArg().isRequired().withLongOpt("reduces")
+    .withDescription("The number of reducers").create("r");
+
     
     // Add Options
     cliOptions.addOption(input);
     cliOptions.addOption(output);
     cliOptions.addOption(rows);
     cliOptions.addOption(cols);
-    cliOptions.addOption(splits);
+    cliOptions.addOption(reduces);
     
     HelpFormatter formatter = new HelpFormatter();
     
@@ -171,7 +148,7 @@ public class Transpose_MapRed extends Configured implements Tool {
     CommandLineParser parser = new PosixParser();
     
     if (args.length <= 1) {
-      formatter.printHelp("Transpose", cliOptions, true);
+      formatter.printHelp("Transpose_newAPI", cliOptions, true);
       System.exit(1);
     }
     
@@ -179,113 +156,48 @@ public class Transpose_MapRed extends Configured implements Tool {
       CommandLine cmd = parser.parse(cliOptions, args, true);
       String pathToInput = cmd.getOptionValue("i");
       String pathToOutput = cmd.getOptionValue("o");
-      int numSplits = Integer.parseInt(cmd.getOptionValue("s"));
       int numCols = Integer.parseInt(cmd.getOptionValue("nc"));
       int numRow = Integer.parseInt(cmd.getOptionValue("nr"));
-      run(pathToInput, pathToOutput, numRow, numCols, numSplits);
+      int numReduces = Integer.parseInt(cmd.getOptionValue("r"));
+      run(new Path(pathToInput), new Path(pathToOutput), numRow, numCols, numReduces);
+      
     } catch (ParseException e) {
-      formatter.printHelp("Transpose", cliOptions, true);
+      formatter.printHelp("Transpose_newAPI", cliOptions, true);
     }
     return 0;
   }
   
-  public void run(String pathToInput, String pathToOutput, int numRows, int numCols, int splits) throws IOException,
-                                                                                                InterruptedException,
-                                                                                                ClassNotFoundException {
-    
-    int roughSplitSize = (int) (numCols / splits);
-    
-    System.out.println("The matrix with " + numCols + " columns will be split into " + splits
-                       + " groups with approximately " + roughSplitSize + " elements in each group.");
-    if (roughSplitSize < 0) {
-      System.err.println("There are more splits than there are columns!");
-      return;
-    }
-    int endPosition = -1;
-    
-    getConf().set("numCols", numCols + "");
+  public void run(Path inputPath, Path outputPath, int numRows, int numCols, int numReduces) throws IOException,
+                                                                                            InterruptedException,
+                                                                                            ClassNotFoundException {
     getConf().set("numRows", numRows + "");
     
-    Path matrixInputPath = new Path(pathToInput);
+    Job job = new Job(getConf());
+    job.setJobName("TransposeJob: " + inputPath + " transpose -> " + outputPath);
+    job.setJarByClass(Transpose_newAPI.class);
     
-    LinkedHashSet<Path> transposeParts = new LinkedHashSet<Path>();
+    job.setNumReduceTasks(numReduces);
     
-    // =================
-    // Create the parts of the file
-    // =================
-    for (int i = 0; i < splits; i++) {
-      Path matrixOutputPath = new Path(pathToOutput + i);
-      transposeParts.add(matrixOutputPath);
-      
-      log.info("Starting split:" + i);
-      
-      getConf().set("startCol", endPosition + 1 + "");
-      if (i == (splits - 1)) {
-        // last split
-        endPosition = numCols;
-        getConf().set("endCol", (numCols - 1) + "");
-      } else {
-        endPosition += roughSplitSize;
-        getConf().set("endCol", endPosition + "");
-      }
-      
-      Job job = new Job(getConf());
-      job.setJobName("TransposeJob: " + matrixInputPath + " transpose -> " + matrixOutputPath);
-      job.setJarByClass(Transpose_MapRed.class);
-      
-      // Set Mappers and Reducers
-      job.setMapperClass(Map.class);
-      job.setReducerClass(Reduce.class);
-      job.setCombinerClass(Combiner.class);
-      
-      // Set Input and Output Paths
-      FileInputFormat.setInputPaths(job, matrixInputPath);
-      FileOutputFormat.setOutputPath(job, matrixOutputPath);
-      System.out.println(pathToOutput.toString());
-      
-      job.setMapOutputKeyClass(IntWritable.class);
-      job.setMapOutputValueClass(DistributedRowMatrix.MatrixEntryWritable.class);
-      
-      // Establish the Output of the Job
-      job.setOutputKeyClass(IntWritable.class);
-      job.setOutputValueClass(VectorWritable.class);
-      
-      job.setInputFormatClass(SequenceFileInputFormat.class);
-      job.setOutputFormatClass(SequenceFileOutputFormat.class);
-      
-      // Maybe I don't need this
-      job.waitForCompletion(true);
-    }
-    // ===============
-    // Combine the parts back to one large file
-    // ===============
+    // Set Mappers and Reducers
+    job.setMapperClass(Map.class);
+    job.setReducerClass(Reduce.class);
+    job.setCombinerClass(Combiner.class);
     
-    // Create writer
-    SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(getConf()), getConf(), new Path(
-        pathToOutput), IntWritable.class, VectorWritable.class);
+    // Set Input and Output Paths
+    FileInputFormat.setInputPaths(job, inputPath);
+    FileOutputFormat.setOutputPath(job, outputPath);
     
-    for (Path path : transposeParts) {
-      Path pathToPart = new Path(path, "part-r-00000");
-      // Create Reader
-      SequenceFile.Reader reader = new SequenceFile.Reader(FileSystem.get(getConf()), pathToPart, getConf());
-      try {
-        // Make temporary reusable objects
-        IntWritable key = (IntWritable) reader.getKeyClass().newInstance();
-        VectorWritable value = (VectorWritable) reader.getValueClass().newInstance();
-        
-        while (reader.next(key, value)) {
-          writer.append(key, value);
-        }
-        reader.close();
-        
-      } catch (InstantiationException e) {
-        e.printStackTrace();
-      } catch (IllegalAccessException e) {
-        e.printStackTrace();
-      }
-    }
-    writer.close();
+    job.setMapOutputKeyClass(IntWritable.class);
+    job.setMapOutputValueClass(DistributedRowMatrix.MatrixEntryWritable.class);
     
-    System.out.println("Done");
+    // Establish the Output of the Job
+    job.setOutputKeyClass(IntWritable.class);
+    job.setOutputValueClass(VectorWritable.class);
+    
+    job.setInputFormatClass(SequenceFileInputFormat.class);
+    job.setOutputFormatClass(SequenceFileOutputFormat.class);
+    
+    // Maybe I don't need this
+    job.waitForCompletion(true);
   }
 }
