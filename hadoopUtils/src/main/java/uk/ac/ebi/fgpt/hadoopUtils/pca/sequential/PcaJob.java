@@ -95,7 +95,7 @@ public class PcaJob extends SequentialTool {
       int numRows = Integer.parseInt(cmd.getOptionValue("nr"));
       int numCols = Integer.parseInt(cmd.getOptionValue("nc"));
       int numEigenVectors = Integer.parseInt(cmd.getOptionValue("e"));
-      setup(pathToInput, pathToOutput);
+      setupAndAssertCleanStart(pathToInput, pathToOutput);
       run(inputPath, outputPath, numRows, numCols, numRank, numEigenVectors, numReduces, config);
     } catch (ParseException e) {
       formatter.printHelp("pcaJob", cliOptions, true);

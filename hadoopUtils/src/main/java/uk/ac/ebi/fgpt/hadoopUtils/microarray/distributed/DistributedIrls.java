@@ -35,7 +35,7 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.math.IterativelyReweightedLeastSqua
 public class DistributedIrls extends IterativelyReweightedLeastSquares {
   private static Logger log = LoggerFactory.getLogger(DistributedIrls.class);
   
-  public static IrlsOutput run(Probeset probeset, double tol, int maxIter, Context context) throws IOException {
+  public static IrlsOutput run(Probeset probeset, double tol, double conjGTol,int maxIter, Context context) throws IOException {
     Configuration conf = context.getConfiguration();
     if (conf.get("design") == null) {
       log.warn("No design path designated");
@@ -78,7 +78,7 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
     
     log.info("Running Congjugate Gradient Solver");
     DistributedConjugateGradientSolver dcgs = new DistributedConjugateGradientSolver();
-    Vector vectorOfEstimates = dcgs.solve(A, b, null, b.size(), tol);
+    Vector vectorOfEstimates = dcgs.solve(A, b, null, b.size(), conjGTol);
     
     log.info("Calculating Residuals");
     Vector vectorOfResidualsInitial = dataVector.minus(designMatrix.times(vectorOfEstimates));
@@ -123,7 +123,7 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
       FileSystem.get(conf).delete(designTransposebyWeight.getRowPath(), true);
       
       log.info("Running Congjugate Gradient Solver");
-      vectorOfEstimates = dcgs.solve(A, b, null, b.size(), tol);
+      vectorOfEstimates = dcgs.solve(A, b, null, b.size(), conjGTol);
       context.setStatus(probeset.getProbesetName() + " - Finished Conjugate Gradient on iteration: "
                         + iteration);
       

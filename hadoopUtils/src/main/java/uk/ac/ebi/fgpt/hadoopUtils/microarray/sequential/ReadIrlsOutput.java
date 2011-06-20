@@ -57,7 +57,7 @@ public class ReadIrlsOutput extends SequentialTool {
   public static void run(String stringToInput, TreeMap<Text,IrlsOutputWritable> mapToFill, boolean verbose) throws IOException {
     
     // Setup environment
-    setup(stringToInput);
+    setupandAssertInputPathIsFile(stringToInput);
     
     // Create Reader
     SequenceFile.Reader reader = new SequenceFile.Reader(fs, inputPath, config);

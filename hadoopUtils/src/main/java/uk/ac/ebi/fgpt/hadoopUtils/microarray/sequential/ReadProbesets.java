@@ -53,9 +53,9 @@ public class ReadProbesets extends SequentialTool {
   }
   
   public static void run(String stringToInput, TreeMap<Text,ProbesetWritable> mapToFill, boolean verbose) throws IOException {
-    
+    //TODO FIXME -- This setup should be in the main class. Also, Use Path instead of String
     // Setup environment
-    setup(stringToInput);
+    setupandAssertInputPathIsFile(stringToInput);
     
     // Create Reader
     SequenceFile.Reader reader = new SequenceFile.Reader(fs, inputPath, config);

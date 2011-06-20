@@ -59,7 +59,7 @@ public class CreateNormalizedVectorFromVector extends SequentialTool {
   }
   
   public static void run(String stringToInput, String stringToOutput) throws IOException {
-    setup(stringToInput, stringToOutput);
+    setupAndAssertCleanStart(stringToInput, stringToOutput);
     
     SequenceFile.Reader reader = new SequenceFile.Reader(fs, inputPath, config);
     

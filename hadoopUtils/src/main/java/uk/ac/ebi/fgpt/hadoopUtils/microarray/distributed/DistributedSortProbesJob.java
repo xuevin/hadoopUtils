@@ -30,12 +30,15 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.Probeset;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.ProbesetWritable;
 import uk.ac.ebi.fgpt.hadoopUtils.pca.math.StringToVector;
 
 public class DistributedSortProbesJob extends Configured implements Tool {
+  private static Logger log = LoggerFactory.getLogger(DistributedSortProbesJob.class);
   public static class MapToVector extends Mapper<LongWritable,Text,Text,VectorWritable> {
     @Override
     protected void map(LongWritable key,
@@ -45,13 +48,14 @@ public class DistributedSortProbesJob extends Configured implements Tool {
       String line = value.toString();
       StringTokenizer tokenizer = new StringTokenizer(line);
       String probeName = tokenizer.nextToken();
+      probeName = probeName.replaceAll("\"","");
       
       try {
         DenseVector probeValues = StringToVector.convert(line, 1);
         context.write(new Text(probeName), new VectorWritable(probeValues));
       } catch (NumberFormatException e) {
         context.setStatus("A line was ignored: " + line.substring(0, 100));
-        System.err.println("A line was ignored");
+        log.info("A line was ignored: " + line.substring(0, 100));
       }
     }
   }
@@ -124,7 +128,7 @@ public class DistributedSortProbesJob extends Configured implements Tool {
                                                           InterruptedException,
                                                           ClassNotFoundException {
     Job job = new Job(getConf());
-    job.setJobName("Performing RMA on : " + pathToInput + " output -> " + pathToOutput);
+    job.setJobName("Sorting probes into probesets: " + pathToInput + " output -> " + pathToOutput);
     job.setJarByClass(DistributedSortProbesJob.class);
     
     Path inputPath = new Path(pathToInput);

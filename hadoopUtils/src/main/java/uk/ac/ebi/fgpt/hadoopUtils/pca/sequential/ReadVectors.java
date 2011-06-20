@@ -56,7 +56,7 @@ public class ReadVectors extends SequentialTool {
   public static void run(String stringToInput, TreeMap<IntWritable,VectorWritable> mapToFill, boolean verbose) throws IOException {
     
     // Setup environment
-    setup(stringToInput);
+    setupandAssertInputPathIsFile(stringToInput);
     
     // Create Reader
     SequenceFile.Reader reader = new SequenceFile.Reader(fs, inputPath, config);

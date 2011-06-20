@@ -8,6 +8,7 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.CreateDesignMatrix;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.CreateDesignMatrixFromProbesetWritable;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.ReadIrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.ReadProbesets;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.SequentialIRLSJobLauncher;
 import uk.ac.ebi.fgpt.hadoopUtils.pca.distributed.CreateNormalizedVectorsFromVectors_MapRed;
 import uk.ac.ebi.fgpt.hadoopUtils.pca.distributed.Transpose_MapRed;
 import uk.ac.ebi.fgpt.hadoopUtils.pca.distributed.Transpose_newAPI;
@@ -52,6 +53,7 @@ public class Main {
     } else if (args[0].equals("sortProbesJob")) {
       DistributedSortProbesJob.main(newArgs);
     } else if (args[0].equals("distIrlsJob")) {
+//      SequentialIRLSJobLauncher.main(newArgs);
       DistributedIrlsJob.main(newArgs);
     } else if (args[0].equals("readProbeset")) {
       ReadProbesets.main(newArgs);

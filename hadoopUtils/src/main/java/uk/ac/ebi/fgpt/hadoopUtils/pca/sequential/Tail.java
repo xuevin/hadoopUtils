@@ -50,8 +50,8 @@ public class Tail extends SequentialTool {
       String pathToInput = cmd.getOptionValue("i");
       String pathToOutput = cmd.getOptionValue("o");
       int numberOfVectors = Integer.parseInt(cmd.getOptionValue('t'));
-      setup(pathToInput, pathToOutput);
-      run(inputPath, outputPath, numberOfVectors,config);
+      setupAndAssertCleanStart(pathToInput, pathToOutput);
+      run(inputPath, outputPath, numberOfVectors, config);
       
     } catch (ParseException e) {
       formatter.printHelp("tail", cliOptions, true);
@@ -61,7 +61,7 @@ public class Tail extends SequentialTool {
   public static int run(Path inputPath, Path outputPath, int numVectors, Configuration config) throws IOException {
     FileSystem fs = FileSystem.get(config);
     
-    if (!fs.isFile(inputPath) && fs.exists(inputPath)){
+    if (!fs.isFile(inputPath) && fs.exists(inputPath)) {
       System.out.println("This is a folder! Please designate a file");
       return 1;
     }

@@ -72,7 +72,7 @@ public class CreateVectorFromTxt extends SequentialTool {
   
   public static void run(String stringToInput, String stringToOutput, int headerRows, int headerColumns) throws IOException {
     
-    setup(stringToInput, stringToOutput);
+    setupAndAssertCleanStart(stringToInput, stringToOutput);
     
     // Open a file for reading
     FSDataInputStream in = fs.open(inputPath);

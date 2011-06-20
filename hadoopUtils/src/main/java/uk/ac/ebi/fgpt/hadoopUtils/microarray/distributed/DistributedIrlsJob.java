@@ -57,7 +57,7 @@ public class DistributedIrlsJob extends Configured implements Tool {
                                                                                              InterruptedException {
       
       if (value.get().getNumProbes() < MAXNUMBERPROBES) {
-        IrlsOutput output = DistributedIrls.run(value.get(), 0.0001, 20, context);
+        IrlsOutput output = DistributedIrls.run(value.get(), 0.0001, 0.0001, 20, context);
         context.write(key, new IrlsOutputWritable(output));
       } else {
         log.warn("SKIPPED: " + value.get().getProbesetName());
@@ -122,31 +122,30 @@ public class DistributedIrlsJob extends Configured implements Tool {
       String pathToTemp = cmd.getOptionValue("t");
       String pathToDesign = cmd.getOptionValue("d");
       int numReduces = Integer.parseInt(cmd.getOptionValue("r"));
-      run(pathToInput, pathToOutput, pathToDesign, pathToTemp, numReduces);
+      run(new Path(pathToInput), new Path(pathToOutput), new Path(pathToDesign), new Path(pathToTemp),
+        numReduces, true);
     } catch (ParseException e) {
       formatter.printHelp("IrlsJob", cliOptions, true);
     }
     return 0;
   }
   
-  public void run(String pathToInput,
-                  String pathToOutput,
-                  String pathToDesign,
-                  String pathToTemp,
-                  int numReduces) throws IOException, InterruptedException, ClassNotFoundException {
-    getConf().set("temp", pathToTemp);
-    getConf().set("design", pathToDesign);
+  public void run(Path inputPath,
+                  Path outputPath,
+                  Path pathToDesign,
+                  Path tempPath,
+                  int numReduces,
+                  boolean waitForCompletion) throws IOException, InterruptedException, ClassNotFoundException {
+    getConf().set("temp", tempPath.toString());
+    getConf().set("design", pathToDesign.toString());
     getConf().set("mapred.child.java.opts", "-Xmx30000m");
     getConf().set("mapred.task.timeout", "10800000"); // Time out after 3 hours
     
     Job job = new Job(getConf());
     job.setNumReduceTasks(numReduces);
     
-    job.setJobName("Performing IRLS on : " + pathToInput + " output -> " + pathToOutput);
+    job.setJobName("Performing IRLS on : " + inputPath);
     job.setJarByClass(DistributedIrlsJob.class);
-    
-    Path inputPath = new Path(pathToInput);
-    Path outputPath = new Path(pathToOutput);
     
     // Set Mappers and Reducers
     job.setMapperClass(Map.class);
@@ -167,7 +166,12 @@ public class DistributedIrlsJob extends Configured implements Tool {
     job.setInputFormatClass(SequenceFileInputFormat.class);
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
     
-    job.waitForCompletion(true);
+    if (waitForCompletion) {
+      job.waitForCompletion(true);
+    } else {
+      job.submit();
+    }
     
   }
+  
 }

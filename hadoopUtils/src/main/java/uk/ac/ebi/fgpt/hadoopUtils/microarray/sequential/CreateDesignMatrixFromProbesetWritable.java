@@ -60,7 +60,7 @@ public class CreateDesignMatrixFromProbesetWritable extends SequentialTool {
   
   private static void run(String probesetWritableDir, String pathToDesign) throws IOException {
     // Setup environment
-    setup(probesetWritableDir);
+    setupandAssertInputPathIsFile(probesetWritableDir);
     
     // Create Reader
     SequenceFile.Reader reader = new SequenceFile.Reader(fs, inputPath, config);

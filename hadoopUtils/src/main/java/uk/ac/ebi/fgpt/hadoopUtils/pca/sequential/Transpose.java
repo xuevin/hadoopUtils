@@ -71,7 +71,7 @@ public class Transpose extends SequentialTool {
   
   public static void run(String stringToInput, String stringToOutput, int numRows, int numColumns) throws IOException {
     
-    setup(stringToInput, stringToOutput);
+    setupAndAssertCleanStart(stringToInput, stringToOutput);
     
     // Create Writer
     SequenceFile.Writer writer = SequenceFile.createWriter(fs, config, outputPath, IntWritable.class,
