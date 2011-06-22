@@ -6,6 +6,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Writable;
 import org.apache.mahout.common.MahoutTestCase;
 import org.apache.mahout.math.DenseVector;
@@ -62,6 +65,15 @@ public final class IrlsOutputWritableTest extends MahoutTestCase {
     IrlsOutput irlsOutput2 = irlsOutputWritable2.get();
     
     assertEquals(mockIrlsOutput.getProbesetName(), irlsOutput2.getProbesetName());
+    
+  }
+  
+  @Test
+  public void testWriteToHDFS() throws IOException {
+    Configuration conf = new Configuration();
+    Path probePath = new Path(getTestTempDirPath(), mockIrlsOutput.getProbesetName());
+    IrlsOutputWritable.writeToPath(conf, probePath, mockIrlsOutput);
+    assertTrue(FileSystem.get(conf).exists(probePath));
     
   }
   

@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed;
+package uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.mapper;
 
 import java.io.IOException;
 

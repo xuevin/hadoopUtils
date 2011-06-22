@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutputWritable;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.ProbesetWritable;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.mapper.DistributedIrls;
 
 /**
  * This performs IRLS using a distributed model. Each node receives probeset but the matrix it creates is also
@@ -138,7 +139,7 @@ public class DistributedIrlsJob extends Configured implements Tool {
                   boolean waitForCompletion) throws IOException, InterruptedException, ClassNotFoundException {
     getConf().set("temp", tempPath.toString());
     getConf().set("design", pathToDesign.toString());
-    getConf().set("mapred.child.java.opts", "-Xmx30000m");
+//    getConf().set("mapred.child.java.opts", "-Xmx30000m");
     getConf().set("mapred.task.timeout", "10800000"); // Time out after 3 hours
     
     Job job = new Job(getConf());

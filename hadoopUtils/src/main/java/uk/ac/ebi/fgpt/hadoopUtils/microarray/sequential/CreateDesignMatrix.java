@@ -25,15 +25,15 @@ import org.apache.mahout.math.hadoop.DistributedRowMatrix;
 import org.apache.mahout.math.hadoop.MatrixMultiplicationJob;
 
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.DesignMatrixFactory;
-import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.DistributedDesignMatrixFactory;
-import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.DistributedIrls;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.mapper.DistributedDesignMatrixFactory;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.mapper.DistributedIrls;
 import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.SequentialTool;
 
 /**
  * This class creates a design matrix depending on how many probes/samples the user specifies.
  * 
  * @author vincent@ebi.ac.uk
- *
+ * 
  */
 public class CreateDesignMatrix extends SequentialTool {
   

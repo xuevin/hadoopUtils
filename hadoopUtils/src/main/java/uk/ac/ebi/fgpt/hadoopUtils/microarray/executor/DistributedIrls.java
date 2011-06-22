@@ -1,4 +1,4 @@
-package uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed;
+package uk.ac.ebi.fgpt.hadoopUtils.microarray.executor;
 
 import java.io.IOException;
 
@@ -8,9 +8,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapred.JobClient;
-import org.apache.hadoop.mapred.JobConf; 
-import org.apache.hadoop.mapreduce.Mapper.Context;
-//import org.apache.hadoop.mapreduce.Reducer.Context;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Matrix;
 import org.apache.mahout.math.SparseMatrix;
@@ -35,26 +33,11 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.math.IterativelyReweightedLeastSqua
 public class DistributedIrls extends IterativelyReweightedLeastSquares {
   private static Logger log = LoggerFactory.getLogger(DistributedIrls.class);
   
-  public static IrlsOutput run(Probeset probeset, double tol, double conjGTol,int maxIter, Context context) throws IOException {
-    Configuration conf = context.getConfiguration();
-    if (conf.get("design") == null) {
-      log.warn("No design path designated");
-    }
-    if (conf.get("temp") == null) {
-      log.warn("No temp path designated");
-    }
-    Path designPath = new Path(conf.get("design"));
-    Path tmpPath = new Path(conf.get("temp"), probeset.getProbesetName());
+  public static IrlsOutput run(Probeset probeset, double tol, double conjGTol,int maxIter, Path designPath, Path tempPath, Configuration conf) throws IOException {
     FileSystem fs = FileSystem.get(conf);
-    if (!fs.exists(tmpPath)) {
-      log.info("Making Temp Path: " + tmpPath.toString());
-      fs.mkdirs(tmpPath);
-    }
-    String jarString = context.getJar();
     
     long time = System.currentTimeMillis();
     log.info("Starting IRLS: " + probeset.getProbesetName());
-    context.setStatus(probeset.getProbesetName() + " - Starting IRLS");
     int iteration = 0;
     double error = 1 + tol;
     
@@ -63,8 +46,8 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
     
     log.info("Creating Design Matrix");
     DistributedDesignMatrixFactory distributedDesignMatrixFactory = new DistributedDesignMatrixFactory(
-        probeset.getNumProbes(), probeset.getNumSamples(), probeset.getProbesetName(), tmpPath, designPath,
-        jarString);
+        probeset.getNumProbes(), probeset.getNumSamples(), probeset.getProbesetName(), tempPath, designPath,
+        conf);
     
     DistributedRowMatrix designMatrix = distributedDesignMatrixFactory.getDesignMatrix();
     DistributedRowMatrix designMatrixTranspose = distributedDesignMatrixFactory.getDesignMatrixTranspose();
@@ -88,30 +71,29 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
     Vector weights = null;
     
     while (iteration <= maxIter && error > tol) {
-      context.setStatus(probeset.getProbesetName() + " - Working on iteration: " + iteration);
       log.info("Running iteration: " + iteration);
       
       double sHat = calculateSHat(vectorOfResidualsInitial);
       weights = weight(vectorOfResidualsInitial.divide(sHat));
-      DistributedRowMatrix weightMatrix = getDiagonalMatrixFromVector(weights, context, iteration, tmpPath);
+      DistributedRowMatrix weightMatrix = getDiagonalMatrixFromVector(weights, conf, iteration, tempPath);
       
       dcgs = new DistributedConjugateGradientSolver();
       
       log.info("Calculating W Transpose times DesignMatrix");
       DistributedRowMatrix weightTransposeByDesign = getProductOfATransposeB(weightMatrix, designMatrix,
-        context, tmpPath);
+        conf, tempPath);
       // Because Matrix multiplication is associative, I can transpose the Weight matrix first and multiply
       // it with the Design matrix. Transposing the weight matrix, is itself. (Because it's diagonal)
       
       log.info("Calculating A = (Design Transpose (W Transpose times DesignMatrix))");
-      A = getProductOfATransposeB(designMatrix, weightTransposeByDesign, context, tmpPath);
+      A = getProductOfATransposeB(designMatrix, weightTransposeByDesign, conf, tempPath);
       
       log.info("Deleting W Transpose By DesignMatrix: " + weightTransposeByDesign.getRowPath());
       FileSystem.get(conf).delete(weightTransposeByDesign.getRowPath(), true);
       
       log.info("Calculating designMatrix Transpose By Weight Matrix");
       DistributedRowMatrix designTransposebyWeight = getProductOfATransposeB(designMatrix, weightMatrix,
-        context, tmpPath);
+        conf, tempPath);
       
       log.info("Deleting Weight Matrix: " + weightMatrix.getRowPath());
       FileSystem.get(conf).delete(weightMatrix.getRowPath(), true);
@@ -124,8 +106,7 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
       
       log.info("Running Congjugate Gradient Solver");
       vectorOfEstimates = dcgs.solve(A, b, null, b.size(), conjGTol);
-      context.setStatus(probeset.getProbesetName() + " - Finished Conjugate Gradient on iteration: "
-                        + iteration);
+      
       
       log.info("Deleting A: " + A.getRowPath());
       FileSystem.get(conf).delete(A.getRowPath(), true);
@@ -137,7 +118,7 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
       vectorOfResidualsInitial = new DenseVector(vectorOfResidualsCurrent);
       iteration++;
     }
-    context.setStatus(probeset.getProbesetName() + " - Finished IRLS" + iteration);
+    log.info("Finished IRLS");
     Vector[] arrayOfWeightVectors = new Vector[probeset.getNumProbes()];
     for (int i = 0; i < probeset.getNumProbes(); i++) {
       arrayOfWeightVectors[i] = new DenseVector(probeset.getNumSamples());
@@ -160,16 +141,15 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
       }
     }
     log.info("IRLS Took: " + (System.currentTimeMillis() - time) + "ms");
-    fs.delete(tmpPath, true);
+    fs.delete(tempPath, true);
     return new IrlsOutput(probeset.getProbesetName(), arrayOfWeightVectors, vectorOfEstimates);
     
   }
   
   public static DistributedRowMatrix getDiagonalMatrixFromVector(Vector vector,
-                                                                 Context context,
+                                                                 Configuration conf,
                                                                  int iteration,
                                                                  Path tmpPath) throws IOException {
-    Configuration conf = context.getConfiguration();
     Path outpath = new Path(tmpPath, "weight" + iteration); // Prevents matrix multiplication from writing
     // in parent
     Matrix matrix = new SparseMatrix(vector.size(), vector.size());
@@ -191,20 +171,19 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
     }
     
     DistributedRowMatrix drm = new DistributedRowMatrix(outpath, tmpPath, matrix.size()[0], matrix.size()[1]);
-    JobConf matrixConf = new JobConf("DiagonalMatrix");
-    matrixConf.setJar(context.getJar());
-    drm.setConf(matrixConf);
+    drm.setConf(new Configuration(conf));
+    
     return drm;
   }
   
   public static DistributedRowMatrix getProductOfATransposeB(DistributedRowMatrix matrixA,
                                                              DistributedRowMatrix matrixB,
-                                                             Context context,
+                                                             Configuration conf,
                                                              Path tmpPath) throws IOException {
     
     log.info("Creating matrix multiplication outpath");
     Path outPath = new Path(tmpPath, "productWith-" + (System.nanoTime() & 0xFF));
-    FileSystem fs = FileSystem.get(context.getConfiguration());
+    FileSystem fs = FileSystem.get(conf);
     while (fs.exists(outPath)) {
       log.info("Conflicting outpath!");
       outPath = new Path(tmpPath, "productWith-" + (System.nanoTime() & 0xFF));
@@ -212,16 +191,17 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
     
     log.info("Multiplying the transpose of " + matrixA.getRowPath() + " with " + matrixB.getRowPath()
              + " -> " + outPath.toString());
-    context.setStatus("Multiplying the transpose of " + matrixA.getRowPath() + " with "
-                      + matrixB.getRowPath() + " -> " + outPath.toString());
     
     Configuration initialConf = matrixA.getConf();
-    Configuration conf = MatrixMultiplicationJob.createMatrixMultiplyJobConf(initialConf, matrixA
+
+    Configuration matrixConf = MatrixMultiplicationJob.createMatrixMultiplyJobConf(initialConf, matrixA
         .getRowPath(), matrixB.getRowPath(), outPath, matrixB.numCols());
-    JobClient.runJob(new JobConf(conf));
+    JobClient.runJob(new JobConf(matrixConf));
+    
+    
     DistributedRowMatrix out = new DistributedRowMatrix(outPath, tmpPath, matrixA.numCols(), matrixB
         .numCols());
-    out.setConf(conf);
+    out.setConf(new Configuration(conf));
     return out;
     
   }

@@ -4,6 +4,7 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.DistributedIrlsJob;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.DistributedSortProbesJob;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.IterativelyReweightedLeastSquaresJob;
+import uk.ac.ebi.fgpt.hadoopUtils.microarray.executor.IRLSLoader;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.CreateDesignMatrix;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.CreateDesignMatrixFromProbesetWritable;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.sequential.ReadIrlsOutput;
@@ -53,8 +54,9 @@ public class Main {
     } else if (args[0].equals("sortProbesJob")) {
       DistributedSortProbesJob.main(newArgs);
     } else if (args[0].equals("distIrlsJob")) {
+      IRLSLoader.main(newArgs);
 //      SequentialIRLSJobLauncher.main(newArgs);
-      DistributedIrlsJob.main(newArgs);
+//      DistributedIrlsJob.main(newArgs);
     } else if (args[0].equals("readProbeset")) {
       ReadProbesets.main(newArgs);
     } else if (args[0].equals("readIrlsOutput")) {

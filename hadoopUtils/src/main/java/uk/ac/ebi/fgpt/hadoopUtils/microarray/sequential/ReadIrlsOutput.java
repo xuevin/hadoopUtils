@@ -55,6 +55,7 @@ public class ReadIrlsOutput extends SequentialTool {
   }
   
   public static void run(String stringToInput, TreeMap<Text,IrlsOutputWritable> mapToFill, boolean verbose) throws IOException {
+    //TODO - fix this lousy string into a Path
     
     // Setup environment
     setupandAssertInputPathIsFile(stringToInput);
