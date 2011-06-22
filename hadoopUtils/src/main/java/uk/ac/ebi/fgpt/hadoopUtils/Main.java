@@ -54,9 +54,9 @@ public class Main {
     } else if (args[0].equals("sortProbesJob")) {
       DistributedSortProbesJob.main(newArgs);
     } else if (args[0].equals("distIrlsJob")) {
-      IRLSLoader.main(newArgs);
+//      IRLSLoader.main(newArgs);
 //      SequentialIRLSJobLauncher.main(newArgs);
-//      DistributedIrlsJob.main(newArgs);
+      DistributedIrlsJob.main(newArgs);
     } else if (args[0].equals("readProbeset")) {
       ReadProbesets.main(newArgs);
     } else if (args[0].equals("readIrlsOutput")) {

@@ -1,6 +1,8 @@
 package uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 
 import org.apache.commons.cli.CommandLine;
@@ -13,6 +15,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -58,8 +61,25 @@ public class DistributedIrlsJob extends Configured implements Tool {
                                                                                              InterruptedException {
       
       if (value.get().getNumProbes() < MAXNUMBERPROBES) {
-        IrlsOutput output = DistributedIrls.run(value.get(), 0.0001, 0.0001, 20, context);
-        context.write(key, new IrlsOutputWritable(output));
+//        Path[] localFiles = DistributedCache.getLocalCacheFiles(context.getConfiguration());
+//        Path designMatrix;
+//        Path designMatrixTranspose;
+//        Path prodMatrix;
+//        
+//        for (Path it : localFiles) {
+//          if (it.toString().endsWith(value.get().getNumProbes() + ".des")) {
+//            designMatrix = it;
+//          }
+//          if (it.toString().endsWith(value.get().getNumProbes() + ".des.t")) {
+//            designMatrixTranspose = it;
+//          }
+//          if (it.toString().endsWith(value.get().getNumProbes() + ".prod")) {
+//            prodMatrix = it;
+//          }
+//        }
+        
+         IrlsOutput output = DistributedIrls.run(value.get(), 0.0001, 0.0001, 20, context);
+         context.write(key, new IrlsOutputWritable(output));
       } else {
         log.warn("SKIPPED: " + value.get().getProbesetName());
       }
@@ -137,9 +157,34 @@ public class DistributedIrlsJob extends Configured implements Tool {
                   Path tempPath,
                   int numReduces,
                   boolean waitForCompletion) throws IOException, InterruptedException, ClassNotFoundException {
+    
+    try {
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/11.des"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/11.des.t"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/11.prod"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/13.des"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/13.des.t"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/13.prod"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/14.des"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/14.des.t"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/14.prod"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/15.des"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/15.des.t"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/15.prod"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/16.des"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/16.des.t"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/16.prod"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/20.des"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/20.des.t"), getConf());
+      DistributedCache.addCacheFile(new URI("/user/vincent/RMA/design/20.prod"), getConf());
+    } catch (URISyntaxException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    
     getConf().set("temp", tempPath.toString());
     getConf().set("design", pathToDesign.toString());
-//    getConf().set("mapred.child.java.opts", "-Xmx30000m");
+    // getConf().set("mapred.child.java.opts", "-Xmx30000m");
     getConf().set("mapred.task.timeout", "10800000"); // Time out after 3 hours
     
     Job job = new Job(getConf());

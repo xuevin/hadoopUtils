@@ -1,5 +1,6 @@
 package uk.ac.ebi.fgpt.hadoopUtils.microarray.executor;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -59,13 +60,17 @@ public class IRLS_ProbesetCallable implements Runnable {
   public void run() {
     
     try {
+      if(probeset.getNumProbes()>30){
+        return;
+      }
       logger.info("Starting probeset: " + probeset.getProbesetName());
-      IrlsOutput irlsOutput = DistributedIrls.run(probeset, 0.0001, 0.0001, 20, designPath, tempPath, conf);
+      Path probeTempPath = new Path(tempPath,probeset.getProbesetName());
+      FileSystem.get(conf).makeQualified(probeTempPath);
+      IrlsOutput irlsOutput = DistributedIrls.run(probeset, 0.0001, 0.0001, 20, designPath, probeTempPath, conf);
       Path probePath = new Path(outPath, irlsOutput.getProbesetName());
       IrlsOutputWritable.writeToPath(conf, probePath, irlsOutput);
-      
-    } catch (IOException e) {
-      e.printStackTrace();
+      logger.info("Finished: " + probeset.getProbesetName());
+      return;
     } catch (Exception e) {
       System.err.println("PROBESET FAILED - WILL CONTINUE WITH OTHERS - " + probeset.getProbesetName());
       return;

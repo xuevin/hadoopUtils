@@ -13,6 +13,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
@@ -74,6 +75,7 @@ public class IRLSLoader {
     ExecutorService pool = Executors.newFixedThreadPool(numThreads);
     
     Configuration conf = new Configuration();
+    
     // getConf().set("mapred.child.java.opts", "-Xmx30000m");
     conf.set("mapred.task.timeout", "10800000"); // Time out after 3 hours
     
