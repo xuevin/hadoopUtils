@@ -8,9 +8,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapred.JobClient;
-import org.apache.hadoop.mapred.JobConf; 
-import org.apache.hadoop.mapreduce.Mapper.Context;
-//import org.apache.hadoop.mapreduce.Reducer.Context;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.Mapper.Context; //import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Matrix;
 import org.apache.mahout.math.SparseMatrix;
@@ -35,7 +34,7 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.math.IterativelyReweightedLeastSqua
 public class DistributedIrls extends IterativelyReweightedLeastSquares {
   private static Logger log = LoggerFactory.getLogger(DistributedIrls.class);
   
-  public static IrlsOutput run(Probeset probeset, double tol, double conjGTol,int maxIter, Context context) throws IOException {
+  public static IrlsOutput run(Probeset probeset, double tol, double conjGTol, int maxIter, Context context) throws IOException {
     Configuration conf = context.getConfiguration();
     if (conf.get("design") == null) {
       log.warn("No design path designated");
@@ -63,8 +62,7 @@ public class DistributedIrls extends IterativelyReweightedLeastSquares {
     
     log.info("Creating Design Matrix");
     DistributedDesignMatrixFactory distributedDesignMatrixFactory = new DistributedDesignMatrixFactory(
-        probeset.getNumProbes(), probeset.getNumSamples(), probeset.getProbesetName(), tmpPath, designPath,
-        jarString);
+        probeset.getNumProbes(), probeset.getNumSamples(), tmpPath, designPath, jarString);
     
     DistributedRowMatrix designMatrix = distributedDesignMatrixFactory.getDesignMatrix();
     DistributedRowMatrix designMatrixTranspose = distributedDesignMatrixFactory.getDesignMatrixTranspose();

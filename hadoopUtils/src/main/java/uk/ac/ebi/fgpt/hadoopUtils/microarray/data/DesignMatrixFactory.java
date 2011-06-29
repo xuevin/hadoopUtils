@@ -1,11 +1,14 @@
 package uk.ac.ebi.fgpt.hadoopUtils.microarray.data;
 
+import org.apache.mahout.SparseMatrixThreaded;
 import org.apache.mahout.math.Matrix;
-import org.apache.mahout.math.SparseMatrix;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DesignMatrixFactory {
   private int numProbes;
   private int numSamples;
+  private Logger log = LoggerFactory.getLogger(DesignMatrixFactory.class);
   
   public DesignMatrixFactory(int numProbes, int numSamples){
     this.numProbes = numProbes;
@@ -13,7 +16,7 @@ public class DesignMatrixFactory {
   }
   
   public Matrix getDesignMatrix() {
-    SparseMatrix matrix = new SparseMatrix(numProbes * numSamples, (numSamples + numProbes - 1));
+    SparseMatrixThreaded matrix = new SparseMatrixThreaded(numProbes * numSamples, (numSamples + numProbes - 1));
     
     int rowPosition = 0;
     for (int column = 0; column < numSamples; column++) {
@@ -33,13 +36,15 @@ public class DesignMatrixFactory {
   }
   
   public Matrix getDesignMatrixTranspose() {
-    Matrix sparseMatrix = new SparseMatrix((numSamples + numProbes - 1), numProbes * numSamples);
+    SparseMatrixThreaded sparseMatrix = new SparseMatrixThreaded((numSamples + numProbes - 1), numProbes * numSamples);
     int column = 0;
     for (int i = 0; i < numSamples; i++) {
       int offset = 0;
       for (int j = 0; j < numProbes; j++) {
         sparseMatrix.setQuick(i, column, 1);
-        sparseMatrix.setQuick(numSamples + offset, column, 1);
+        if(j!=numProbes-1){
+          sparseMatrix.setQuick(numSamples + offset, column, 1);
+        }
         column++;
         offset++;
       }

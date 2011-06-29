@@ -41,14 +41,20 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.math.IterativelyReweightedLeastSqua
  */
 public class IterativelyReweightedLeastSquaresJob extends Configured implements Tool {
   public static class Map extends Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable> {
+    private static final int MAXNUMBERPROBES = 30;
+
     @Override
     protected void map(Text key,
                        ProbesetWritable value,
                        Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
                                                                                              InterruptedException {
       
-      IrlsOutput output = IterativelyReweightedLeastSquares.run(value.get(), 0.0001, 20);
-      context.write(key, new IrlsOutputWritable(output));
+      if (value.get().getNumProbes() < MAXNUMBERPROBES) {
+
+      }else{
+        IrlsOutput output = IterativelyReweightedLeastSquares.run(value.get(), 0.0001, 20);
+        context.write(key, new IrlsOutputWritable(output));
+      }
     }
   }
   

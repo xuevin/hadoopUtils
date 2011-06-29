@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.DesignMatrixFactory;
 
 public class DistributedDesignMatrixFactory {
-  
+  //TODO Combine this class back into the DesignMatrixFactory
   private Logger log = LoggerFactory.getLogger(DistributedDesignMatrixFactory.class);
   
   private Path designPath;
@@ -32,7 +32,6 @@ public class DistributedDesignMatrixFactory {
   
   public DistributedDesignMatrixFactory(int numProbes,
                                         int numSamples,
-                                        String probesetName,
                                         Path tmpPath,
                                         Path designPath,
                                         String jarString) throws IOException {

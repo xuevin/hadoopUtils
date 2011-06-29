@@ -16,7 +16,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
-import org.apache.mina.handler.chain.IoHandlerCommand.NextCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +23,10 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.ProbesetWritable;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.distributed.DistributedIrlsJob;
 import uk.ac.ebi.fgpt.hadoopUtils.pca.sequential.SequentialTool;
 
+/**
+ * This was when I tried to control how many probeset jobs went into the cluster at once.
+ *
+ */
 public class SequentialIRLSJobLauncher extends SequentialTool {
   private static Logger log = LoggerFactory.getLogger(SequentialIRLSJobLauncher.class);
   

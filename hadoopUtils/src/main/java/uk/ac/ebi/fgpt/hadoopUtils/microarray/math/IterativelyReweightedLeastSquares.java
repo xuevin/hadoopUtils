@@ -3,11 +3,14 @@ package uk.ac.ebi.fgpt.hadoopUtils.microarray.math;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import org.apache.mahout.SparseMatrixThreaded;
 import org.apache.mahout.math.DenseVector;
+import org.apache.mahout.math.LinearOperator;
 import org.apache.mahout.math.Matrix;
 import org.apache.mahout.math.SparseMatrix;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.solver.ConjugateGradientSolver;
+import org.hamcrest.core.IsInstanceOf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +19,7 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.Probeset;
 
 /**
- * This is the linear implementation of Iteratively Reweighted Least Squares
+ * This is the linear in memory implementation of iteratively reweighted Least Squares
  * 
  * @author Vincent Xue
  * 
@@ -36,8 +39,9 @@ public class IterativelyReweightedLeastSquares {
     log.info("Creating Design Matrix");
     DesignMatrixFactory designMatrixFactory = new DesignMatrixFactory(probeset.getNumProbes(), probeset
         .getNumSamples());
-    Matrix designMatrix = designMatrixFactory.getDesignMatrix();
-    Matrix designMatrixTranspose = designMatrixFactory.getDesignMatrixTranspose();
+    Matrix designMatrix =  designMatrixFactory.getDesignMatrix();
+    Matrix designMatrixTranspose = designMatrixFactory
+        .getDesignMatrixTranspose();
     
     ConjugateGradientSolver cgs = new ConjugateGradientSolver();
     
@@ -60,18 +64,35 @@ public class IterativelyReweightedLeastSquares {
     while (iteration <= maxIter && error > tol) {
       log.info("Running iteration: " + iteration);
       
+      log.info("Calculate SHat");
       double sHat = calculateSHat(vectorOfResidualsInitial);
       weights = weight(vectorOfResidualsInitial.divide(sHat));
-      Matrix weightMatrix = getDiagonalMatrixFromVector(weights);
+      
       
       cgs = new ConjugateGradientSolver();
       
-      A = designMatrixTranspose.times(weightMatrix).times(designMatrix);
-      b = designMatrixTranspose.times(weightMatrix).times(dataVector);
-      vectorOfEstimates = cgs.solve(A, b, null, b.size(), tol);
       
+      if(designMatrixTranspose instanceof SparseMatrixThreaded){
+        log.info("Calculate A");
+        A = ((SparseMatrixThreaded)designMatrixTranspose).timesDiagonaledVector(weights).times(designMatrix);
+        log.info("Calculate b");
+        b = ((SparseMatrixThreaded)designMatrixTranspose).timesDiagonaledVector(weights).times(dataVector);
+      }else{
+         Matrix weightMatrix = getDiagonalMatrixFromVector(weights);
+         A = designMatrixTranspose.times(weightMatrix).times(designMatrix);
+         b = designMatrixTranspose.times(weightMatrix).times(dataVector);
+      }
+      
+      
+      log.info("Running Congjugate Gradient Solver");
+      long time2 = System.currentTimeMillis();
+      vectorOfEstimates = cgs.solve(A, b, null, b.size(), tol);
+      log.info("Took " + (System.currentTimeMillis() - time2));
+      
+      log.info("Calculating vector of residuals current");
       vectorOfResidualsCurrent = dataVector.minus(designMatrix.times(vectorOfEstimates));
       
+      log.info("Calculating error");
       error = abs(vectorOfResidualsCurrent.minus(vectorOfResidualsInitial)).maxValue();
       vectorOfResidualsInitial = new DenseVector(vectorOfResidualsCurrent);
       iteration++;

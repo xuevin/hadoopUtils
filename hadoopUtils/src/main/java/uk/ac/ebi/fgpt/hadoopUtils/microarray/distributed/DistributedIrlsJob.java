@@ -27,9 +27,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.mahout.math.DenseVector;
-import org.apache.mahout.math.Vector;
-import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,25 +58,8 @@ public class DistributedIrlsJob extends Configured implements Tool {
                                                                                              InterruptedException {
       
       if (value.get().getNumProbes() < MAXNUMBERPROBES) {
-//        Path[] localFiles = DistributedCache.getLocalCacheFiles(context.getConfiguration());
-//        Path designMatrix;
-//        Path designMatrixTranspose;
-//        Path prodMatrix;
-//        
-//        for (Path it : localFiles) {
-//          if (it.toString().endsWith(value.get().getNumProbes() + ".des")) {
-//            designMatrix = it;
-//          }
-//          if (it.toString().endsWith(value.get().getNumProbes() + ".des.t")) {
-//            designMatrixTranspose = it;
-//          }
-//          if (it.toString().endsWith(value.get().getNumProbes() + ".prod")) {
-//            prodMatrix = it;
-//          }
-//        }
-        
-         IrlsOutput output = DistributedIrls.run(value.get(), 0.0001, 0.0001, 20, context);
-         context.write(key, new IrlsOutputWritable(output));
+        IrlsOutput output = DistributedIrls.run(value.get(), 0.0001, 0.0001, 20, context);
+        context.write(key, new IrlsOutputWritable(output));
       } else {
         log.warn("SKIPPED: " + value.get().getProbesetName());
       }
