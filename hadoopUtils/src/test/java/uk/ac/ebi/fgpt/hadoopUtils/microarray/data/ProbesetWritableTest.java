@@ -7,9 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
-import org.apache.mahout.common.MahoutTestCase;
 import org.apache.mahout.math.DenseVector;
-import org.apache.mahout.math.SequentialAccessSparseVector;
+import org.apache.mahout.math.MahoutTestCase;
 import org.apache.mahout.math.Vector;
 import org.junit.Before;
 import org.junit.Test;

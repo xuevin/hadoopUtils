@@ -17,7 +17,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.mahout.math.VectorWritable;
-import org.mortbay.log.Log;
 
 public class Tail extends SequentialTool {
   public static void main(String[] args) throws IOException {
