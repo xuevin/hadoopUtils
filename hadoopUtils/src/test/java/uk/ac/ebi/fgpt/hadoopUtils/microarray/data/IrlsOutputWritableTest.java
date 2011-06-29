@@ -11,12 +11,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Writable;
 import org.apache.mahout.math.DenseVector;
+import org.apache.mahout.math.MahoutTestCase;
 import org.apache.mahout.math.Vector;
 import org.junit.Before;
 import org.junit.Test;
 
-
-public final class IrlsOutputWritableTest extends org.apache.mahout.math.MahoutTestCase {
+public final class IrlsOutputWritableTest extends MahoutTestCase {
   private IrlsOutputWritable irlsOutputWritable;
   private IrlsOutput mockIrlsOutput;
   

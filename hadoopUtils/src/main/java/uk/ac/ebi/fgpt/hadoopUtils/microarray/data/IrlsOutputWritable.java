@@ -1,16 +1,12 @@
 package uk.ac.ebi.fgpt.hadoopUtils.microarray.data;
 
-import java.io.BufferedReader;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -18,8 +14,6 @@ import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import uk.ac.ebi.fgpt.hadoopUtils.pca.math.StringToVector;
 
 public class IrlsOutputWritable implements Writable {
   private static Logger logger = LoggerFactory.getLogger(IrlsOutputWritable.class);
