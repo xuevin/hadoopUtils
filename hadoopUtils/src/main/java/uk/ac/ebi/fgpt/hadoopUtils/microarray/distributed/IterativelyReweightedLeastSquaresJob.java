@@ -24,6 +24,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.mahout.SparseMatrixMultiplier;
 
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutput;
 import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.IrlsOutputWritable;
@@ -42,16 +43,17 @@ import uk.ac.ebi.fgpt.hadoopUtils.microarray.math.IterativelyReweightedLeastSqua
 public class IterativelyReweightedLeastSquaresJob extends Configured implements Tool {
   public static class Map extends Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable> {
     private static final int MAXNUMBERPROBES = 30;
-
+    
     @Override
     protected void map(Text key,
                        ProbesetWritable value,
                        Mapper<Text,ProbesetWritable,Text,IrlsOutputWritable>.Context context) throws IOException,
                                                                                              InterruptedException {
       
-      if (value.get().getNumProbes() < MAXNUMBERPROBES) {
-
-      }else{
+      if (value.get().getNumProbes() > MAXNUMBERPROBES) {
+        // skip
+      } else {
+        SparseMatrixMultiplier.setNumberOfThreads(4);
         IrlsOutput output = IterativelyReweightedLeastSquares.run(value.get(), 0.0001, 20);
         context.write(key, new IrlsOutputWritable(output));
       }
@@ -84,10 +86,13 @@ public class IterativelyReweightedLeastSquaresJob extends Configured implements 
       "use given file as input<text,ProbeSetWritable>").withLongOpt("input").create("i");
     Option output = OptionBuilder.withArgName("output.seqFile").hasArg().isRequired().withLongOpt("output")
         .withDescription("use given file as output <Text,IrlsOutputWritable>").create("o");
+    Option reduces = OptionBuilder.withArgName("num").hasArg().isRequired().withLongOpt("reduces")
+        .withDescription("the number of reduces that should run").create("r");
     
     // Add Options
     cliOptions.addOption(input);
     cliOptions.addOption(output);
+    cliOptions.addOption(reduces);
     
     HelpFormatter formatter = new HelpFormatter();
     
@@ -103,18 +108,24 @@ public class IterativelyReweightedLeastSquaresJob extends Configured implements 
       CommandLine cmd = parser.parse(cliOptions, args, true);
       String pathToInput = cmd.getOptionValue("i");
       String pathToOutput = cmd.getOptionValue("o");
-      run(pathToInput, pathToOutput);
+      int numReduces = Integer.parseInt(cmd.getOptionValue("r"));
+      run(pathToInput, pathToOutput, numReduces);
     } catch (ParseException e) {
       formatter.printHelp("IrlsJob", cliOptions, true);
     }
     return 0;
   }
   
-  public void run(String pathToInput, String pathToOutput) throws IOException,
-                                                          InterruptedException,
-                                                          ClassNotFoundException {
+  public void run(String pathToInput, String pathToOutput, int numReduces) throws IOException,
+                                                                          InterruptedException,
+                                                                          ClassNotFoundException {
+    
+    getConf().set("mapred.task.timeout", "108000000"); // Time out after 30 hours
+    getConf().set("mapred.child.java.opts", "-Xmx7000m");
+    // getConf().set("mapred.tasktracker.map.tasks.maximum", "1");
     
     Job job = new Job(getConf());
+    job.setNumReduceTasks(numReduces);
     job.setJobName("Performing IRLS on : " + pathToInput + " output -> " + pathToOutput);
     job.setJarByClass(IterativelyReweightedLeastSquaresJob.class);
     

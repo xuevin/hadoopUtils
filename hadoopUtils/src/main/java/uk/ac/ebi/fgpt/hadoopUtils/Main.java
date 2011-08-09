@@ -59,7 +59,8 @@ public class Main {
 //      IRLSLoader.main(newArgs);
 //      SequentialIRLSJobLauncher.main(newArgs);
 //      DistributedIrlsJob.main(newArgs);
-      OneoffTest.main();
+//      OneoffTest.main();
+      IterativelyReweightedLeastSquaresJob.main(newArgs);
     } else if (args[0].equals("readProbeset")) {
       ReadProbesets.main(newArgs);
     } else if (args[0].equals("readIrlsOutput")) {

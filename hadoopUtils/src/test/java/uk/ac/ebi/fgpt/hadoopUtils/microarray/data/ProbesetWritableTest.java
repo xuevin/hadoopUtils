@@ -1,5 +1,8 @@
 package uk.ac.ebi.fgpt.hadoopUtils.microarray.data;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -8,15 +11,11 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.mahout.math.DenseVector;
-import org.apache.mahout.math.MahoutTestCase;
 import org.apache.mahout.math.Vector;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.Probeset;
-import uk.ac.ebi.fgpt.hadoopUtils.microarray.data.ProbesetWritable;
-
-public final class ProbesetWritableTest extends MahoutTestCase {
+public final class ProbesetWritableTest extends SimpleTestCase {
   private ProbesetWritable probeSetWritable;
   private Probeset mockProbeset;
   

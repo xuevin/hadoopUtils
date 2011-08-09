@@ -5,12 +5,10 @@ import java.util.Collections;
 
 import org.apache.mahout.SparseMatrixThreaded;
 import org.apache.mahout.math.DenseVector;
-import org.apache.mahout.math.LinearOperator;
 import org.apache.mahout.math.Matrix;
 import org.apache.mahout.math.SparseMatrix;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.solver.ConjugateGradientSolver;
-import org.hamcrest.core.IsInstanceOf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +37,8 @@ public class IterativelyReweightedLeastSquares {
     log.info("Creating Design Matrix");
     DesignMatrixFactory designMatrixFactory = new DesignMatrixFactory(probeset.getNumProbes(), probeset
         .getNumSamples());
-    Matrix designMatrix =  designMatrixFactory.getDesignMatrix();
-    Matrix designMatrixTranspose = designMatrixFactory
-        .getDesignMatrixTranspose();
+    Matrix designMatrix = designMatrixFactory.getDesignMatrix();
+    Matrix designMatrixTranspose = designMatrixFactory.getDesignMatrixTranspose();
     
     ConjugateGradientSolver cgs = new ConjugateGradientSolver();
     
@@ -53,6 +50,10 @@ public class IterativelyReweightedLeastSquares {
     
     log.info("Running Congjugate Gradient Solver");
     Vector vectorOfEstimates = cgs.solve(A, b, null, b.size(), tol);
+    
+    A = null;
+    b = null;
+    cgs = null;
     
     log.info("Calculating Residuals");
     Vector vectorOfResidualsInitial = dataVector.minus(designMatrix.times(vectorOfEstimates));
@@ -68,26 +69,26 @@ public class IterativelyReweightedLeastSquares {
       double sHat = calculateSHat(vectorOfResidualsInitial);
       weights = weight(vectorOfResidualsInitial.divide(sHat));
       
-      
       cgs = new ConjugateGradientSolver();
       
-      
-      if(designMatrixTranspose instanceof SparseMatrixThreaded){
+      if (designMatrixTranspose instanceof SparseMatrixThreaded) {
         log.info("Calculate A");
-        A = ((SparseMatrixThreaded)designMatrixTranspose).timesDiagonaledVector(weights).times(designMatrix);
+        A = ((SparseMatrixThreaded) designMatrixTranspose).timesDiagonaledVector(weights).times(designMatrix);
         log.info("Calculate b");
-        b = ((SparseMatrixThreaded)designMatrixTranspose).timesDiagonaledVector(weights).times(dataVector);
-      }else{
-         Matrix weightMatrix = getDiagonalMatrixFromVector(weights);
-         A = designMatrixTranspose.times(weightMatrix).times(designMatrix);
-         b = designMatrixTranspose.times(weightMatrix).times(dataVector);
+        b = ((SparseMatrixThreaded) designMatrixTranspose).timesDiagonaledVector(weights).times(dataVector);
+      } else {
+        Matrix weightMatrix = getDiagonalMatrixFromVector(weights);
+        log.info("Calculate A");
+        A = designMatrixTranspose.times(weightMatrix).times(designMatrix);
+        log.info("Calculate b");
+        b = designMatrixTranspose.times(weightMatrix).times(dataVector);
       }
       
-      
-      log.info("Running Congjugate Gradient Solver");
-      long time2 = System.currentTimeMillis();
       vectorOfEstimates = cgs.solve(A, b, null, b.size(), tol);
-      log.info("Took " + (System.currentTimeMillis() - time2));
+      
+      A = null;
+      b = null;
+      cgs = null;
       
       log.info("Calculating vector of residuals current");
       vectorOfResidualsCurrent = dataVector.minus(designMatrix.times(vectorOfEstimates));
@@ -186,6 +187,7 @@ public class IterativelyReweightedLeastSquares {
       double upper = values.get(values.size() / 2);
       median = (lower + upper) / 2.0;
     }
+    values = null;
     return median / 0.6745;
   }
   

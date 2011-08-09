@@ -1,9 +1,12 @@
 package uk.ac.ebi.fgpt.hadoopUtils.microarray.data;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -16,7 +19,7 @@ import org.apache.mahout.math.Vector;
 import org.junit.Before;
 import org.junit.Test;
 
-public final class IrlsOutputWritableTest extends MahoutTestCase {
+public final class IrlsOutputWritableTest extends SimpleTestCase{
   private IrlsOutputWritable irlsOutputWritable;
   private IrlsOutput mockIrlsOutput;
   
