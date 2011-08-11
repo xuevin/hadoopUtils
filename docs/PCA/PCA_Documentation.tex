@@ -1,0 +1,55 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{fullpage}
+\title{PCA Documentation}
+\author{Vincent Xue}
+\date{\today}
+\begin{document}
+\maketitle
+\section{Steps}
+\\matrix.txt - A text file that has the matrix
+\\matrix.seqFile - A hadoop formated sequence file.
+
+\begin{enumerate}
+\item Load text file into Sequence File Format.
+\begin{lstlisting}
+	hutils createVectorFromTxt -i <matrix.txt> -o <matrix.seqFile> 
+\end{lstlisting}
+\item Make sure that the matrix.seqFile is in a new folder.
+\begin{lstlisting}
+	hadoop dfs -mkdir newFolder
+	hadoop dfs -mv matrix.seqFile newFolder
+\end{lstlisting}
+
+\item Run the pcaJob
+	\begin{lstlisting}
+	hutils pcaJob
+	\end{lstlisting}
+	\begin{itemize}
+	\item $A$ - The starting matrix
+	\item $rows$ - The number or rows in the starting matrix
+	\item $cols$ - The number of columns in the starting matrix
+	\item $A_n$ - Matrix A normalized per row
+	\item $A_n^T$ - Matrix A normalized per row and tranposed
+	\item $r$ -rank-  the number of raw eigen vectors the SVD produces. This should be greater than $n$.
+	\item $n$ - the number of eigen vectors desired from the top.
+	\item $E_{n}$ - the top $n$ eigen vectors.
+	\item $E_{n}^T$ - the $n$ eigen vectors transposed.
+
+	\end{itemize}
+	What is happening? 
+	\begin{enumerate}
+	\item Normalize each line (horizontally) of matrix $A$. ($A_n$).
+	\item Transpose the normalized matrix($A_n$) and store it for matrix multiplication later. ($A_n^T$);
+	\item Run SVD on the normalized matrix($A_n$) and retrieve $r$ number of raw eigen vectors. Each eigen 			vector has $cols$ number of elements.
+	\item Use tail and get the top $n$ eigen vectors. ($E_{n}$)
+	\item Transpose the tailed top $n$ eigen vectors. ($E_{n}^T$)
+	\item Multiply ($A_n^T$) "transposeTimes" ($E_{n}^T$).
+	\end{enumerate}
+\end{enumerate}
+
+\section{Results}
+The results of the pcaJob is a matrix with dimensions $cols$ by $n$. The eigen vectors are sorted in order, and therefore the vector with the most variability is the one furthest to the right. The order of the rows is unchanged from the original matrix.
+
+\end{document}
